@@ -33,6 +33,7 @@ thread_local! {
 pub(crate) struct ThemeSelectorControl {
     pub(super) available: ConfigProperty<Vec<ThemeEntry>>,
     pub(super) palette: PaletteConfig,
+    pub(super) palette_base_theme: ConfigProperty<String>,
     pub(super) scale: ConfigProperty<ScaleFactor>,
     pub(crate) dirty_badge: Option<gtk::Label>,
     pub(super) popover: gtk::Popover,
@@ -45,6 +46,7 @@ pub(crate) struct ThemeSelectorControl {
 pub(crate) struct ThemeSelectorInit {
     pub(crate) available: ConfigProperty<Vec<ThemeEntry>>,
     pub(crate) palette: PaletteConfig,
+    pub(super) palette_base_theme: ConfigProperty<String>,
     pub(crate) scale: ConfigProperty<ScaleFactor>,
     pub(crate) dirty_badge: Option<gtk::Label>,
 }
@@ -142,6 +144,7 @@ impl SimpleComponent for ThemeSelectorControl {
         let model = Self {
             available: init.available,
             palette: init.palette,
+            palette_base_theme: init.palette_base_theme,
             scale: init.scale,
             dirty_badge: init.dirty_badge,
             popover,

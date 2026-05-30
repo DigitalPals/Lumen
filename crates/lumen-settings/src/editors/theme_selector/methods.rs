@@ -23,6 +23,7 @@ impl ThemeSelectorControl {
             badge.set_css_classes(&["badge", "badge-subtle"]);
         }
 
+        self.palette_base_theme.set(name);
         apply_palette(&self.palette, &theme.palette);
         self.popover.popdown();
     }
