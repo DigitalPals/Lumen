@@ -70,6 +70,7 @@ fn build_theme_row(
 }
 
 pub(super) fn apply_palette(target: &PaletteConfig, source: &Palette) {
+    // println!("{:?}", &target);
     set_if_valid(&target.bg, &source.bg);
     set_if_valid(&target.surface, &source.surface);
     set_if_valid(&target.elevated, &source.elevated);

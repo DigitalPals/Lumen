@@ -4,6 +4,7 @@ use relm4::{gtk::prelude::*, prelude::*};
 
 use super::{
     ThemeSelectorControl,
+    ThemeSelectorInit,
     helpers::{apply_palette, populate_list},
     scaled_max_height,
 };
@@ -15,6 +16,12 @@ impl ThemeSelectorControl {
         let Some(theme) = themes.iter().find(|entry| entry.name == name) else {
             return;
         };
+
+        if let Some(ref badge) = self.dirty_badge {
+            badge.set_label(&name);
+            badge.set_visible(true);
+            badge.set_css_classes(&["badge", "badge-subtle"]);
+        }
 
         apply_palette(&self.palette, &theme.palette);
         self.popover.popdown();

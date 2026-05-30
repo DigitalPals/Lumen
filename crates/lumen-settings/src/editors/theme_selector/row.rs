@@ -8,6 +8,7 @@ use relm4::{gtk::prelude::*, prelude::*};
 
 use crate::{
     editors::theme_selector::{ThemeSelectorControl, ThemeSelectorInit},
+    editors::make_dirty_badge,
     pages::spec::SettingRowInit,
     property_handle::PropertyHandle,
     row::RowBehavior,
@@ -20,11 +21,13 @@ pub(crate) fn theme_selector(
     scale: &ConfigProperty<ScaleFactor>,
     i18n_key: &'static str,
 ) -> SettingRowInit {
+    let badge = make_dirty_badge();
     let controller = ThemeSelectorControl::builder()
         .launch(ThemeSelectorInit {
             available: available.clone(),
             palette: palette.clone(),
             scale: scale.clone(),
+            dirty_badge: Some(badge.clone()),
         })
         .detach();
 
@@ -36,7 +39,7 @@ pub(crate) fn theme_selector(
         control: widget.upcast(),
         keepalive: Box::new(controller),
         full_width: false,
-        dirty_badge: None,
+        dirty_badge: Some(badge),
         behavior: RowBehavior::Action,
         unit: None,
     }

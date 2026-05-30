@@ -34,6 +34,7 @@ pub(crate) struct ThemeSelectorControl {
     pub(super) available: ConfigProperty<Vec<ThemeEntry>>,
     pub(super) palette: PaletteConfig,
     pub(super) scale: ConfigProperty<ScaleFactor>,
+    pub(crate) dirty_badge: Option<gtk::Label>,
     pub(super) popover: gtk::Popover,
     pub(super) list_box: gtk::ListBox,
     pub(super) scrolled: gtk::ScrolledWindow,
@@ -45,6 +46,7 @@ pub(crate) struct ThemeSelectorInit {
     pub(crate) available: ConfigProperty<Vec<ThemeEntry>>,
     pub(crate) palette: PaletteConfig,
     pub(crate) scale: ConfigProperty<ScaleFactor>,
+    pub(crate) dirty_badge: Option<gtk::Label>,
 }
 
 #[derive(Debug)]
@@ -141,6 +143,7 @@ impl SimpleComponent for ThemeSelectorControl {
             available: init.available,
             palette: init.palette,
             scale: init.scale,
+            dirty_badge: init.dirty_badge,
             popover,
             list_box,
             scrolled,
