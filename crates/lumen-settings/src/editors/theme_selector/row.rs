@@ -7,8 +7,10 @@ use lumen_config::{
 use relm4::{gtk::prelude::*, prelude::*};
 
 use crate::{
-    editors::theme_selector::{ThemeSelectorControl, ThemeSelectorInit},
-    editors::make_dirty_badge,
+    editors::{
+        make_dirty_badge,
+        theme_selector::{ThemeSelectorControl, ThemeSelectorInit},
+    },
     pages::spec::SettingRowInit,
     property_handle::PropertyHandle,
     row::RowBehavior,
@@ -18,7 +20,7 @@ use crate::{
 pub(crate) fn theme_selector(
     available: &ConfigProperty<Vec<ThemeEntry>>,
     palette: &PaletteConfig,
-    palette_base_theme: &ConfigProperty<String>, 
+    palette_base_theme: &ConfigProperty<String>,
     scale: &ConfigProperty<ScaleFactor>,
     i18n_key: &'static str,
 ) -> SettingRowInit {

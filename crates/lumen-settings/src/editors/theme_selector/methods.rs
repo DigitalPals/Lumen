@@ -4,7 +4,6 @@ use relm4::{gtk::prelude::*, prelude::*};
 
 use super::{
     ThemeSelectorControl,
-    ThemeSelectorInit,
     helpers::{apply_palette, populate_list},
     scaled_max_height,
 };
