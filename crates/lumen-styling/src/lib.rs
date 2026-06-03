@@ -21,9 +21,8 @@ use lumen_config::{
         styling::{StylingConfig, ThemeProvider},
     },
 };
-use tracing::error;
-
 use palette_provider::color::hex_to_rgba;
+use tracing::error;
 
 /// Static CSS compiled at build time.
 pub const STATIC_CSS: &str = include_str!(concat!(env!("OUT_DIR"), "/style.css"));
@@ -57,7 +56,7 @@ pub fn theme_css(
     let bar_values = bar_rounding.to_bar_css_values();
     let bar_button_values = button_rounding.to_bar_element_css_values();
     let bar_group_values = group_rounding.to_bar_element_css_values();
-    let dropdown_opacity = (bar.dropdown_opacity.get().value() as f32)/100.0;
+    let dropdown_opacity = (bar.dropdown_opacity.get().value() as f32) / 100.0;
     let dropdown_surface = hex_to_rgba(&resolved.surface, dropdown_opacity);
 
     format!(

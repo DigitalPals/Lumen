@@ -29,10 +29,7 @@ pub(crate) fn hex_to_rgba(hex: &str, alpha: f32) -> String {
     let srgb = srgb.into_format::<u8>();
     format!(
         "rgba({}, {}, {}, {:.2})",
-        srgb.red,
-        srgb.green,
-        srgb.blue,
-        alpha
+        srgb.red, srgb.green, srgb.blue, alpha
     )
 }
 
