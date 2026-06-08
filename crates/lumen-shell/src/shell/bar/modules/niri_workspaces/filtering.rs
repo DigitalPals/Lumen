@@ -38,7 +38,7 @@ pub(super) fn collect_displayed(
 ) -> Vec<WorkspaceSnapshot> {
     let trailing_empty_ids = compute_trailing_empties(&snapshots);
 
-    let candidates: Vec<WorkspaceSnapshot> = snapshots
+    let mut workspaces: Vec<WorkspaceSnapshot> = snapshots
         .into_iter()
         .filter(|snapshot| visible_on_monitor(snapshot, ctx))
         .filter(|snapshot| {
@@ -52,16 +52,8 @@ pub(super) fn collect_displayed(
         .filter(|snapshot| !(ctx.hide_trailing_empty && trailing_empty_ids.contains(&snapshot.id)))
         .collect();
 
-    let (mut shown, hidden): (Vec<_>, Vec<_>) = candidates
-        .into_iter()
-        .partition(|snapshot| snapshot.has_windows || snapshot.is_active);
-
-    for snapshot in hidden {
-        shown.push(snapshot);
-    }
-
-    shown.sort_by_key(sort_key);
-    shown
+    workspaces.sort_by_key(sort_key);
+    workspaces
 }
 
 fn visible_on_monitor(snapshot: &WorkspaceSnapshot, ctx: &FilterContext<'_>) -> bool {
