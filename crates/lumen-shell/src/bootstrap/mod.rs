@@ -324,7 +324,7 @@ async fn init_daemon_services(
                 .blocklist(blocklist)
                 .build(),
         );
-        try_service!(timer, "Notification", spawned(notification_task), no_wrap).await
+        try_service!(timer, "Notification", spawned(notification_task), no_wrap)
     } else {
         None
     };
