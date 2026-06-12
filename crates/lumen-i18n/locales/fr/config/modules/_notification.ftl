@@ -1,6 +1,9 @@
 ### Configuration Lumen - Module Notification
 
-## Configuration du module Notification
+## Configuration du module Notifications
+
+settings-modules-notifications-enabled = Activé
+    .description = Activer le service et le module de notifications
 
 settings-modules-notifications-icon-name = Icône par défaut
     .description = Icône affichée en l'absence de notifications
