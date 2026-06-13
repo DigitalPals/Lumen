@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/lumen.svg" width="200" alt="Lumen">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/lumen-lockup-dark.svg">
+    <img src="assets/lumen-lockup-light.svg" width="360" alt="Lumen">
+  </picture>
 </p>
 
 # Lumen
@@ -114,7 +117,7 @@ sudo systemctl enable --now bluetooth NetworkManager upower power-profiles-daemo
 ### Build and launch:
 
 ```sh
-git clone <your-lumen-repo-url> Lumen
+git clone https://github.com/lumen-rs/lumen.git Lumen
 cd Lumen
 cargo install --path lumen
 cargo install --path crates/lumen-settings
@@ -152,10 +155,6 @@ Every field is documented at [lumen.app/config](https://lumen.app/config/).
 ## Requirements
 
 A Wayland compositor that implements the `wlr-layer-shell` protocol. Compositor-specific modules currently target Hyprland, Niri and Mango; Sway support is planned.
-
-## Credits
-
-Logo by [@M70v](https://www.instagram.com/m70v.art/).
 
 ## License
 
