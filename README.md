@@ -42,14 +42,12 @@ Full guides, reference, and walkthroughs are at **[lumen.app](https://lumen.app)
 
 ## Install
 
-Arch Linux binary:
+Lumen isn't packaged for any distro yet, so install it from source. Native packages (AUR and others) are planned.
 
-```sh
-yay -S lumen-bin
-```
+First install the system dependencies for your distro:
 
 <details>
-<summary><b>Arch (from source)</b></summary>
+<summary><b>Arch</b></summary>
 
 Install Rust via [rustup](https://rustup.rs), then the system libraries:
 
@@ -126,10 +124,6 @@ lumen panel start
 ```
 
 On a different distro? See [lumen.app/guide/getting-started](https://lumen.app/guide/getting-started) for the library-version reference.
-
-<a href="https://repology.org/project/lumen/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/lumen.svg" alt="Packaging status">
-</a>
 
 ## Configuration
 
