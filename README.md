@@ -8,8 +8,8 @@
 # Lumen
 
 <p align="center">
-  <a href="https://github.com/lumen-rs/lumen/actions"><img src="https://img.shields.io/github/actions/workflow/status/lumen-rs/lumen/ci.yml?branch=master&style=for-the-badge" alt="CI"></a>
-  <a href="https://github.com/lumen-rs/lumen/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/lumen-rs/lumen/actions"><img src="https://img.shields.io/github/actions/workflow/status/lumen-rs/lumen/ci.yml?branch=main&style=for-the-badge" alt="CI"></a>
+  <a href="https://github.com/lumen-rs/lumen/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License"></a>
   <a href="https://lumen.app"><img src="https://img.shields.io/badge/Wiki-lumen.app-7aa2f7?style=for-the-badge" alt="Wiki"></a>
 </p>
 
