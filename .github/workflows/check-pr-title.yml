@@ -8,7 +8,8 @@ on:
             - edited
             - synchronize
 
-permissions: {}
+permissions:
+    pull-requests: read
 
 jobs:
     check:
@@ -19,4 +20,4 @@ jobs:
               with:
                   requireScope: false
               env:
-                  GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
+                  GITHUB_TOKEN: ${{ github.token }}
