@@ -7,3 +7,4 @@ dropdown-media-sources = Sources de médias
 dropdown-media-unknown-title = Titre inconnu
 dropdown-media-unknown-artist = Artiste inconnu
 dropdown-media-unknown-album = Album inconnu
+dropdown-media-live = En direct
