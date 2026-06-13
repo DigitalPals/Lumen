@@ -1,6 +1,7 @@
 #[allow(deprecated)]
 use gtk4::prelude::StyleContextExt;
 use gtk4::{gdk, gio, glib::idle_add_local_once};
+use gtk4_layer_shell::{KeyboardMode, LayerShell};
 use lumen_systray::{
     adapters::gtk4::{Adapter, TrayMenuModel},
     types::Coordinates,
@@ -20,7 +21,7 @@ use crate::shell::{
 };
 
 impl SystrayItem {
-    pub(super) fn request_menu_show(&self, sender: &FactorySender<Self>) {
+    pub(super) fn request_menu_show(&self, sender: &FactorySender<Self>, coords: Coordinates) {
         if let Some(popover) = self.popover.as_ref()
             && popover.is_visible()
         {
@@ -37,11 +38,11 @@ impl SystrayItem {
                 debug!(error = %error, "AboutToShow not supported");
             }
 
-            sender.input(SystrayItemMsg::ShowMenu);
+            sender.input(SystrayItemMsg::ShowMenu(coords));
         });
     }
 
-    pub(super) fn toggle_menu(&mut self) {
+    pub(super) fn toggle_menu(&mut self, coords: Coordinates) {
         if let Some(popover) = self.popover.as_ref()
             && popover.is_visible()
         {
@@ -50,24 +51,24 @@ impl SystrayItem {
             return;
         }
 
-        self.show_menu();
+        self.show_menu(coords);
     }
 
     #[allow(clippy::cognitive_complexity)]
-    fn show_menu(&mut self) {
+    fn show_menu(&mut self, coords: Coordinates) {
         let item_id = self.item.id.get();
         debug!(item_id = %item_id, title = %self.item.title.get(), "show_menu called");
 
         let menu_data = self.item.menu.get();
         let Some(root_menu) = menu_data else {
             debug!("no menu data, falling back");
-            self.spawn_context_menu_fallback();
+            self.spawn_context_menu_fallback(coords);
             return;
         };
 
         if root_menu.children.is_empty() {
             debug!("empty menu, falling back");
-            self.spawn_context_menu_fallback();
+            self.spawn_context_menu_fallback(coords);
             return;
         }
 
@@ -81,6 +82,7 @@ impl SystrayItem {
 
         let popover = self.ensure_popover(&model.menu);
         self.apply_menu_model(&popover, model);
+        self.set_bar_keyboard_mode(KeyboardMode::OnDemand);
         popover.popup();
     }
 
@@ -95,6 +97,9 @@ impl SystrayItem {
 
         popover.connect_map(|popover| {
             override_model_button_layout(popover.upcast_ref());
+        });
+        popover.connect_closed(|popover| {
+            set_keyboard_mode_from_popover(popover, KeyboardMode::None);
         });
 
         if let Some(parent) = self.button.as_ref() {
@@ -132,6 +137,21 @@ impl SystrayItem {
         }
     }
 
+    fn set_bar_keyboard_mode(&self, mode: KeyboardMode) {
+        let Some(button) = self.button.as_ref() else {
+            return;
+        };
+
+        let Some(window) = button
+            .root()
+            .and_then(|root| root.downcast::<gtk::Window>().ok())
+        else {
+            return;
+        };
+
+        window.set_keyboard_mode(mode);
+    }
+
     pub(super) fn clear_accelerators(&mut self) {
         let accels: Vec<String> = self.registered_accels.drain(..).collect();
 
@@ -152,10 +172,10 @@ impl SystrayItem {
         }
     }
 
-    fn spawn_context_menu_fallback(&self) {
+    fn spawn_context_menu_fallback(&self, coords: Coordinates) {
         let item = self.item.clone();
         tokio::spawn(async move {
-            let _ = item.context_menu(Coordinates::new(0, 0)).await;
+            let _ = item.context_menu(coords).await;
         });
     }
 
@@ -240,6 +260,21 @@ impl SystrayItem {
 
         idle_add_local_once(move || override_model_button_layout(popover.upcast_ref()));
     }
+}
+
+fn set_keyboard_mode_from_popover(popover: &gtk::Popover, mode: KeyboardMode) {
+    let Some(parent) = popover.parent() else {
+        return;
+    };
+
+    let Some(window) = parent
+        .root()
+        .and_then(|root| root.downcast::<gtk::Window>().ok())
+    else {
+        return;
+    };
+
+    window.set_keyboard_mode(mode);
 }
 
 /// GTK4's `GtkModelButton` hides icons when a label is present and reserves

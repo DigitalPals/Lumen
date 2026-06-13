@@ -4,9 +4,9 @@ mod watchers;
 
 use std::sync::Arc;
 
-use gtk4::gio::SimpleActionGroup;
+use gtk4::{EventControllerScroll, EventControllerScrollFlags, gio::SimpleActionGroup};
 use lumen_config::ConfigService;
-use lumen_systray::{core::item::TrayItem, types::Coordinates};
+use lumen_systray::{core::item::TrayItem, error::Error, types::Coordinates};
 use relm4::{
     gtk::{self, prelude::*},
     prelude::*,
@@ -34,10 +34,14 @@ pub(super) struct SystrayItem {
 #[derive(Debug)]
 #[allow(clippy::enum_variant_names)]
 pub(super) enum SystrayItemMsg {
-    LeftClick,
-    RightClick,
-    MiddleClick,
-    ShowMenu,
+    LeftClick(Coordinates),
+    RightClick(Coordinates),
+    MiddleClick(Coordinates),
+    Scroll {
+        delta: i32,
+        orientation: &'static str,
+    },
+    ShowMenu(Coordinates),
     MenuUpdated,
     IconUpdated,
 }
@@ -95,34 +99,58 @@ impl FactoryComponent for SystrayItem {
 
         self.button = Some(root.clone());
 
-        root.connect_clicked({
+        let click = gtk::GestureClick::builder().button(0).build();
+        click.connect_released({
             let sender = sender.clone();
-            move |_| {
-                sender.input(SystrayItemMsg::LeftClick);
-            }
-        });
+            move |gesture, _, x, y| {
+                let coords = Coordinates::new(x.round() as i32, y.round() as i32);
+                let msg = match gesture.current_button() {
+                    1 => SystrayItemMsg::LeftClick(coords),
+                    2 => SystrayItemMsg::MiddleClick(coords),
+                    3 => SystrayItemMsg::RightClick(coords),
+                    _ => return,
+                };
 
-        let right_click = gtk::GestureClick::builder().button(3).build();
-        let middle_click = gtk::GestureClick::builder().button(2).build();
-
-        right_click.connect_released({
-            let sender = sender.clone();
-            move |gesture, _, _, _| {
                 gesture.set_state(gtk::EventSequenceState::Claimed);
-                sender.input(SystrayItemMsg::RightClick);
+                sender.input(msg);
             }
         });
 
-        middle_click.connect_released({
+        let scroll = EventControllerScroll::new(
+            EventControllerScrollFlags::VERTICAL | EventControllerScrollFlags::HORIZONTAL,
+        );
+        scroll.connect_scroll({
             let sender = sender.clone();
-            move |gesture, _, _, _| {
-                gesture.set_state(gtk::EventSequenceState::Claimed);
-                sender.input(SystrayItemMsg::MiddleClick);
+            move |controller, dx, dy| {
+                let horizontal = dx.abs() > dy.abs();
+                let amount = if horizontal { dx } else { dy };
+
+                if amount == 0.0 {
+                    return gtk::glib::Propagation::Proceed;
+                }
+
+                let delta = (amount * 120.0).round() as i32;
+                if delta == 0 {
+                    return gtk::glib::Propagation::Proceed;
+                }
+
+                let orientation = if horizontal { "horizontal" } else { "vertical" };
+                debug!(
+                    dx,
+                    dy,
+                    delta,
+                    orientation,
+                    item_id = %item_id,
+                    classes = ?controller.widget().map(|widget| widget.css_classes()),
+                    "systray scroll"
+                );
+                sender.input(SystrayItemMsg::Scroll { delta, orientation });
+                gtk::glib::Propagation::Stop
             }
         });
 
-        root.add_controller(right_click);
-        root.add_controller(middle_click);
+        root.add_controller(click);
+        root.add_controller(scroll);
 
         watchers::spawn_menu_watcher(&sender, &self.item, self.cancel_token.clone());
         watchers::spawn_icon_watcher(&sender, &self.item, self.cancel_token.clone());
@@ -137,41 +165,72 @@ impl FactoryComponent for SystrayItem {
 
     fn update(&mut self, msg: Self::Input, _sender: relm4::prelude::FactorySender<Self>) {
         match msg {
-            SystrayItemMsg::LeftClick => {
+            SystrayItemMsg::LeftClick(coords) => {
                 let item = self.item.clone();
+                let sender = _sender.clone();
                 let item_is_menu = item.item_is_menu.get();
+                if item_is_menu {
+                    self.request_menu_show(&sender, coords);
+                    return;
+                }
+
                 tokio::spawn(async move {
-                    let result = if item_is_menu {
-                        item.context_menu(Coordinates::new(0, 0)).await
-                    } else {
-                        item.activate(Coordinates::new(0, 0)).await
-                    };
-                    if let Err(error) = result {
-                        warn!(
-                            id = %item.id.get(),
-                            bus_name = %item.bus_name.get(),
-                            error = %error,
-                            "systray activate failed"
-                        );
+                    let result = item.activate(coords).await;
+                    match result {
+                        Ok(()) => {}
+                        Err(Error::OperationNotSupported { .. }) => {
+                            debug!(
+                                id = %item.id.get(),
+                                bus_name = %item.bus_name.get(),
+                                "systray activate unsupported, showing menu instead"
+                            );
+                            if let Err(error) = item.refresh_menu().await {
+                                debug!(error = %error, "AboutToShow not supported");
+                            }
+                            sender.input(SystrayItemMsg::ShowMenu(coords));
+                        }
+                        Err(error) => {
+                            warn!(
+                                id = %item.id.get(),
+                                bus_name = %item.bus_name.get(),
+                                error = %error,
+                                "systray activate failed"
+                            );
+                        }
                     }
                 });
             }
-            SystrayItemMsg::RightClick => {
-                self.request_menu_show(&_sender);
+            SystrayItemMsg::RightClick(coords) => {
+                self.request_menu_show(&_sender, coords);
             }
 
-            SystrayItemMsg::ShowMenu => {
-                self.toggle_menu();
+            SystrayItemMsg::ShowMenu(coords) => {
+                self.toggle_menu(coords);
             }
-            SystrayItemMsg::MiddleClick => {
+            SystrayItemMsg::MiddleClick(coords) => {
                 let item = self.item.clone();
                 tokio::spawn(async move {
-                    if let Err(error) = item.secondary_activate(Coordinates::new(0, 0)).await {
+                    if let Err(error) = item.secondary_activate(coords).await {
                         warn!(
                             id = %item.id.get(),
                             bus_name = %item.bus_name.get(),
                             error = %error,
                             "systray secondary_activate failed"
+                        );
+                    }
+                });
+            }
+            SystrayItemMsg::Scroll { delta, orientation } => {
+                let item = self.item.clone();
+                tokio::spawn(async move {
+                    if let Err(error) = item.scroll(delta, orientation).await {
+                        warn!(
+                            id = %item.id.get(),
+                            bus_name = %item.bus_name.get(),
+                            delta,
+                            orientation,
+                            error = %error,
+                            "systray scroll failed"
                         );
                     }
                 });
