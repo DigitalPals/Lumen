@@ -110,7 +110,7 @@ impl SystrayItem {
             override_model_button_layout(popover.upcast_ref());
         });
         popover.connect_closed(|popover| {
-            set_keyboard_mode_from_popover(popover, KeyboardMode::None);
+            set_keyboard_mode_from_popover(popover.upcast_ref(), KeyboardMode::None);
         });
 
         if let Some(parent) = self.button.as_ref() {

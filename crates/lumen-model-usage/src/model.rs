@@ -1,5 +1,6 @@
-use chrono::{DateTime, Utc};
 use std::time::Duration;
+
+use chrono::{DateTime, Utc};
 
 use crate::service::ModelUsageErrorKind;
 

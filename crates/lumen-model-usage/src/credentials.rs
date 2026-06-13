@@ -8,8 +8,7 @@
 
 use std::path::{Path, PathBuf};
 
-use base64::Engine;
-use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::Utc;
 use serde::Deserialize;
 
