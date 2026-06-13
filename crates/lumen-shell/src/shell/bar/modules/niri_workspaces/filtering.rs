@@ -59,7 +59,9 @@ pub(super) fn collect_displayed(
 
     for snapshot in hidden {
         if name_as_id(&snapshot.name).is_some_and(|id| id <= ctx.min_workspace_count)
-            || (!ctx.hide_trailing_empty && trailing_empty_ids.contains(&snapshot.id))
+            || (!ctx.hide_trailing_empty
+                && snapshot.name.is_none()
+                && trailing_empty_ids.contains(&snapshot.id))
         {
             shown.push(snapshot);
         }
