@@ -37,11 +37,7 @@ pub(super) fn collect_displayed(
     snapshots: Vec<WorkspaceSnapshot>,
     ctx: &FilterContext<'_>,
 ) -> Vec<WorkspaceSnapshot> {
-    let trailing_empty_ids = if ctx.hide_trailing_empty {
-        compute_trailing_empties(&snapshots)
-    } else {
-        Vec::new()
-    };
+    let trailing_empty_ids = compute_trailing_empties(&snapshots);
 
     let candidates: Vec<WorkspaceSnapshot> = snapshots
         .into_iter()
@@ -54,7 +50,7 @@ pub(super) fn collect_displayed(
                 ctx.ignore_patterns,
             )
         })
-        .filter(|snapshot| !trailing_empty_ids.contains(&snapshot.id))
+        .filter(|snapshot| !(ctx.hide_trailing_empty && trailing_empty_ids.contains(&snapshot.id)))
         .collect();
 
     let (mut shown, hidden): (Vec<_>, Vec<_>) = candidates
@@ -62,7 +58,9 @@ pub(super) fn collect_displayed(
         .partition(|snapshot| snapshot.has_windows || snapshot.is_active);
 
     for snapshot in hidden {
-        if name_as_id(&snapshot.name).is_some_and(|id| id <= ctx.min_workspace_count) {
+        if name_as_id(&snapshot.name).is_some_and(|id| id <= ctx.min_workspace_count)
+            || (!ctx.hide_trailing_empty && trailing_empty_ids.contains(&snapshot.id))
+        {
             shown.push(snapshot);
         }
     }
@@ -204,10 +202,10 @@ mod tests {
         let snapshots = vec![
             occupied(1, 1, "DP-1"),
             empty(2, 2, "DP-1"),
-            named_empty(3, 3, "DP-1", "web"),
+            occupied(3, 3, "DP-1"),
         ];
         let displayed = collect_displayed(snapshots, &ctx_default());
-        assert_eq!(ids(&displayed), vec![1]);
+        assert_eq!(ids(&displayed), vec![1, 3]);
     }
 
     #[test]
@@ -240,6 +238,7 @@ mod tests {
             named_empty(99, 9, "DP-1", "9"),
         ];
         let ctx = FilterContext {
+            hide_trailing_empty: true,
             min_workspace_count: 3,
             ..ctx_default()
         };
@@ -335,6 +334,21 @@ mod tests {
         };
         let displayed = collect_displayed(snapshots, &ctx);
         assert_eq!(ids(&displayed), vec![1, 2]);
+    }
+
+    #[test]
+    fn shows_trailing_empty_when_not_hidden() {
+        let snapshots = vec![
+            occupied(1, 1, "DP-1"),
+            occupied(2, 2, "DP-1"),
+            empty(3, 3, "DP-1"),
+        ];
+        let ctx = FilterContext {
+            hide_trailing_empty: false,
+            ..ctx_default()
+        };
+        let displayed = collect_displayed(snapshots, &ctx);
+        assert_eq!(ids(&displayed), vec![1, 2, 3]);
     }
 
     #[test]
