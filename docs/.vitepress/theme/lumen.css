@@ -1,0 +1,155 @@
+:root {
+    --lumen-bg: #16161e;
+    --lumen-surface: #1a1b26;
+    --lumen-elevated: #202230;
+    --lumen-fg: #c0caf5;
+    --lumen-fg-muted: #a9b1d6;
+    --lumen-primary: #7aa2f7;
+    --lumen-red: #f7768e;
+    --lumen-yellow: #e0af68;
+    --lumen-green: #9ece6a;
+    --lumen-blue: #7dcfff;
+}
+
+.dark {
+    --vp-c-bg: var(--lumen-surface);
+    --vp-c-bg-alt: var(--lumen-bg);
+    --vp-c-bg-elv: var(--lumen-elevated);
+    --vp-c-bg-soft: var(--lumen-elevated);
+
+    --vp-c-text-1: var(--lumen-fg);
+    --vp-c-text-2: var(--lumen-fg-muted);
+    --vp-c-text-3: rgba(169, 177, 214, 0.64);
+
+    --vp-c-divider: rgba(169, 177, 214, 0.16);
+    --vp-c-gutter: #0d0d15;
+
+    --vp-c-default-1: var(--lumen-elevated);
+    --vp-c-default-2: #292c3c;
+    --vp-c-default-3: #32364a;
+    --vp-c-default-soft: rgba(32, 34, 48, 0.5);
+
+    --vp-c-brand-1: var(--lumen-primary);
+    --vp-c-brand-2: #8cb0f8;
+    --vp-c-brand-3: #9bbbf9;
+    --vp-c-brand-soft: rgba(122, 162, 247, 0.14);
+
+    --vp-c-tip-1: var(--lumen-green);
+    --vp-c-tip-2: #aad67e;
+    --vp-c-tip-3: #b7dc91;
+    --vp-c-tip-soft: rgba(158, 206, 106, 0.14);
+
+    --vp-c-note-1: var(--lumen-blue);
+    --vp-c-note-2: #91d6ff;
+    --vp-c-note-3: #a5ddff;
+    --vp-c-note-soft: rgba(125, 207, 255, 0.14);
+    --vp-c-important-1: var(--lumen-blue);
+    --vp-c-important-2: #91d6ff;
+    --vp-c-important-3: #a5ddff;
+    --vp-c-important-soft: rgba(125, 207, 255, 0.14);
+
+    --vp-c-warning-1: var(--lumen-yellow);
+    --vp-c-warning-2: #e6bb80;
+    --vp-c-warning-3: #ebc795;
+    --vp-c-warning-soft: rgba(224, 175, 104, 0.14);
+
+    --vp-c-danger-1: var(--lumen-red);
+    --vp-c-danger-2: #f88a9e;
+    --vp-c-danger-3: #f99ba9;
+    --vp-c-danger-soft: rgba(247, 118, 142, 0.14);
+    --vp-c-caution-1: var(--lumen-red);
+    --vp-c-caution-2: #f88a9e;
+    --vp-c-caution-3: #f99ba9;
+    --vp-c-caution-soft: rgba(247, 118, 142, 0.14);
+
+    --vp-code-bg: var(--lumen-elevated);
+    --vp-code-color: var(--lumen-blue);
+    --vp-code-line-highlight-color: rgba(122, 162, 247, 0.12);
+    --vp-code-block-bg: var(--lumen-bg);
+
+    --vp-button-brand-border: transparent;
+    --vp-button-brand-text: var(--lumen-bg);
+    --vp-button-brand-bg: var(--lumen-primary);
+    --vp-button-brand-hover-border: transparent;
+    --vp-button-brand-hover-text: var(--lumen-bg);
+    --vp-button-brand-hover-bg: #8cb0f8;
+    --vp-button-brand-active-border: transparent;
+    --vp-button-brand-active-text: var(--lumen-bg);
+    --vp-button-brand-active-bg: #6890e0;
+
+    --vp-button-alt-border: var(--vp-c-divider);
+    --vp-button-alt-text: var(--lumen-fg);
+    --vp-button-alt-bg: var(--lumen-surface);
+    --vp-button-alt-hover-border: var(--vp-c-divider);
+    --vp-button-alt-hover-text: var(--lumen-fg);
+    --vp-button-alt-hover-bg: var(--lumen-elevated);
+    --vp-button-alt-active-border: var(--vp-c-divider);
+    --vp-button-alt-active-text: var(--lumen-fg);
+    --vp-button-alt-active-bg: var(--lumen-elevated);
+}
+
+.dark .VPHome .name,
+.dark .VPHome .text {
+    background: linear-gradient(120deg, var(--lumen-primary) 30%, var(--lumen-blue));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.VPSidebar .group + .group {
+    border-top: 1px solid var(--vp-c-divider);
+}
+
+.dark .vp-doc table {
+    border-color: var(--vp-c-divider);
+    font-size: 0.95em;
+}
+
+.dark .vp-doc th {
+    background-color: var(--lumen-surface);
+    color: var(--lumen-fg);
+    font-weight: 600;
+}
+
+.dark .vp-doc tr {
+    background-color: transparent;
+    border-color: var(--vp-c-divider);
+}
+
+.dark .vp-doc tr:nth-child(2n) {
+    background-color: rgba(22, 22, 30, 0.5);
+}
+
+.dark .vp-doc td,
+.dark .vp-doc th {
+    border-color: var(--vp-c-divider);
+}
+
+.dark .vp-doc table code {
+    background-color: var(--lumen-bg);
+    color: var(--lumen-blue);
+    font-size: 1em;
+    padding: 0.1em 0.4em;
+}
+
+.dark .vp-doc table td:first-child code,
+.dark .vp-doc table th:first-child code {
+    white-space: nowrap;
+}
+
+:root,
+body {
+    --vp-layout-max-width: 100rem !important;
+}
+
+.VPDoc.has-aside .content-container {
+    max-width: 68rem !important;
+}
+
+.VPDoc:not(.has-sidebar) .content {
+    max-width: 68rem !important;
+}
+
+.VPDoc:not(.has-sidebar) .container {
+    max-width: 80rem !important;
+}

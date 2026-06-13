@@ -1,0 +1,61 @@
+[package]
+name = "lumen"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Wayland services CLI"
+repository.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "lumen"
+path = "src/main.rs"
+
+[dependencies]
+chrono.workspace = true
+clap.workspace = true
+clap_complete = "4"
+console.workspace = true
+futures.workspace = true
+gdk4.workspace = true
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true
+indicatif.workspace = true
+notify.workspace = true
+relm4.workspace = true
+reqwest.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tokio-stream.workspace = true
+tokio-util = { workspace = true, features = ["rt"] }
+toml.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+# Service dependencies
+lumen-audio.workspace = true
+lumen-battery.workspace = true
+lumen-bluetooth.workspace = true
+lumen-cava.workspace = true
+# Common dependencies
+lumen-core = { workspace = true, features = ["schema"] }
+lumen-ipc.workspace = true
+lumen-config.workspace = true
+lumen-hyprland.workspace = true
+lumen-icons.workspace = true
+lumen-media.workspace = true
+lumen-network.workspace = true
+lumen-notification.workspace = true
+lumen-power-profiles.workspace = true
+lumen-styling.workspace = true
+lumen-systray.workspace = true
+lumen-wallpaper.workspace = true
+lumen-shell.workspace = true
+lumen-widgets.workspace = true
+zbus.workspace = true
+
+[lints]
+workspace = true

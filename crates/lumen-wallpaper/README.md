@@ -1,0 +1,48 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/lumen-rs/lumen-services/master/assets/lumen-services.svg" width="200" alt="Lumen">
+</p>
+
+# lumen-wallpaper
+
+Wallpaper management with cycling and color extraction support.
+
+[![Crates.io](https://img.shields.io/crates/v/lumen-wallpaper)](https://crates.io/crates/lumen-wallpaper)
+[![docs.rs](https://img.shields.io/docsrs/lumen-wallpaper)](https://docs.rs/lumen-wallpaper)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+## Installation
+
+```sh
+cargo add lumen-wallpaper
+```
+
+## Usage
+
+```rust,no_run
+use lumen_wallpaper::WallpaperService;
+use futures::StreamExt;
+
+async fn example() -> Result<(), lumen_wallpaper::Error> {
+    let wp = WallpaperService::new().await?;
+
+    // Snapshot: show wallpaper on each monitor
+    for (monitor, state) in wp.monitors.get().iter() {
+        println!("{monitor}: {:?}", state.wallpaper);
+    }
+
+    // Watch: react to wallpaper changes for theming or logging
+    let mut stream = wp.monitors.watch();
+    while let Some(monitors) = stream.next().await {
+        for (monitor, state) in monitors.iter() {
+            println!("{monitor} wallpaper changed to {:?}", state.wallpaper);
+        }
+    }
+    Ok(())
+}
+```
+
+## License
+
+MIT
+
+Part of [lumen-services](https://github.com/lumen-rs/lumen-services).

@@ -7,10 +7,10 @@ outline: [2]
 
 # Config reference
 
-Every config file lives at `~/.config/wayle/config.toml`. Each page below covers one section. Every field has a default; start with an empty file and add only what you want to change.
+Every config file lives at `~/.config/lumen/config.toml`. Each page below covers one section. Every field has a default; start with an empty file and add only what you want to change.
 
 ::: tip
-Editor intellisense via JSON Schema. Install [Tombi](https://marketplace.visualstudio.com/items?itemName=tombi-toml.tombi) for VSCode or the `tombi` LSP for Neovim, Helix, or Zed. The schema is written to `~/.config/wayle/schema.json` on startup.
+Editor intellisense via JSON Schema. Install [Tombi](https://marketplace.visualstudio.com/items?itemName=tombi-toml.tombi) for VSCode or the `tombi` LSP for Neovim, Helix, or Zed. The schema is written to `~/.config/lumen/schema.json` on startup.
 :::
 
 ## Top-level sections

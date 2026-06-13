@@ -1,14 +1,14 @@
 ---
-title: Wayle
+title: Lumen
 layout: doc
 ---
  
 <div style="display: flex; gap: 16px; align-items: center;">
-<img src="/wayle.svg" alt="Wayle settings GUI" style="float: left; width: 150px; height: auto;">
+<img src="/lumen.svg" alt="Lumen settings GUI" style="float: left; width: 150px; height: auto;">
 </div>
 
 
-# Wayle Documentation
+# Lumen Documentation
 
 A Wayland desktop shell with the bar, notifications, OSD, wallpaper, and device controls built in. Written in Rust with GTK4 and Relm4.
 

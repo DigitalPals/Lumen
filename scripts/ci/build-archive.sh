@@ -14,16 +14,16 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_DIR"
 
-"${TARGET_DIR}/wayle" completions bash >completions.bash
-"${TARGET_DIR}/wayle" completions zsh >_wayle
-"${TARGET_DIR}/wayle" completions fish >wayle.fish
+"${TARGET_DIR}/lumen" completions bash >completions.bash
+"${TARGET_DIR}/lumen" completions zsh >_lumen
+"${TARGET_DIR}/lumen" completions fish >lumen.fish
 
-STAGING="wayle-${VERSION}-${ARCH}-linux"
+STAGING="lumen-${VERSION}-${ARCH}-linux"
 mkdir -p "${STAGING}/icons" "${STAGING}/completions"
-cp "${TARGET_DIR}/wayle" "${TARGET_DIR}/wayle-settings" LICENSE "${STAGING}/"
+cp "${TARGET_DIR}/lumen" "${TARGET_DIR}/lumen-settings" LICENSE "${STAGING}/"
 cp -r resources/icons/hicolor "${STAGING}/icons/"
-cp completions.bash _wayle wayle.fish "${STAGING}/completions/"
-cp resources/wayle.service "${STAGING}/"
-cp resources/com.wayle.settings.desktop "${STAGING}/"
-cp resources/wayle-settings.svg "${STAGING}/"
+cp completions.bash _lumen lumen.fish "${STAGING}/completions/"
+cp resources/lumen.service "${STAGING}/"
+cp resources/com.lumen.settings.desktop "${STAGING}/"
+cp resources/lumen-settings.svg "${STAGING}/"
 tar czf "${STAGING}.tar.gz" "${STAGING}"

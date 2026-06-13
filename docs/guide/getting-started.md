@@ -4,18 +4,18 @@ title: Getting started
 
 # Getting started
 
-Wayle is a Wayland desktop shell written in Rust with GTK4 and Relm4. It provides a top bar, notification center, on-screen display, wallpaper management and much more. Built-in mechanisms to handle audio, Bluetooth, network, media, battery and power controls.
+Lumen is a Wayland desktop shell written in Rust with GTK4 and Relm4. It provides a top bar, notification center, on-screen display, wallpaper management and much more. Built-in mechanisms to handle audio, Bluetooth, network, media, battery and power controls.
 
-Settings can be edited in `config.toml`, through the `wayle-settings` GUI, or with the `wayle config` CLI. All three surfaces provided hot reloaded updates, reflected in the shell immediately.
+Settings can be edited in `config.toml`, through the `lumen-settings` GUI, or with the `lumen config` CLI. All three surfaces provided hot reloaded updates, reflected in the shell immediately.
 
-Wayle requires a Wayland compositor that implements the `wlr-layer-shell` protocol. Compositor-specific modules currently target Hyprland, Niri and Mango; Sway support is in development.
+Lumen requires a Wayland compositor that implements the `wlr-layer-shell` protocol. Compositor-specific modules currently target Hyprland, Niri and Mango; Sway support is in development.
 
-<a href="/wayle-preview.png" target="_blank" rel="noopener">
-  <img src="/wayle-preview.png" alt="Wayle desktop shell" style="margin-bottom: 1.5rem;">
+<a href="/lumen-preview.png" target="_blank" rel="noopener">
+  <img src="/lumen-preview.png" alt="Lumen desktop shell" style="margin-bottom: 1.5rem;">
 </a>
 
-<a href="/wayle-settings-preview.png" target="_blank" rel="noopener">
-  <img src="/wayle-settings-preview.png" alt="Wayle settings GUI">
+<a href="/lumen-settings-preview.png" target="_blank" rel="noopener">
+  <img src="/lumen-settings-preview.png" alt="Lumen settings GUI">
 </a>
 
 ## Install

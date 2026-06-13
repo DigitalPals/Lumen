@@ -99,7 +99,7 @@ jobs:
                   VERSION="${GITHUB_REF_NAME#v}"
                   ARCH="${{ matrix.arch }}"
                   gh release upload "${{ github.ref_name }}" \
-                    "wayle-${VERSION}-${ARCH}-linux.tar.gz" \
+                    "lumen-${VERSION}-${ARCH}-linux.tar.gz" \
                     --clobber
 
     ubuntu:
@@ -156,7 +156,7 @@ jobs:
             - name: Build Ubuntu package
               run: |
                   VERSION="${GITHUB_REF_NAME#v}"
-                  ./scripts/ci/build-packages.sh "wayle-${VERSION}-${{ matrix.arch }}-linux.tar.gz" "${VERSION}" deb
+                  ./scripts/ci/build-packages.sh "lumen-${VERSION}-${{ matrix.arch }}-linux.tar.gz" "${VERSION}" deb
 
             - name: Upload to release
               env:
@@ -209,8 +209,8 @@ jobs:
                   sed \
                     -e "s/@VERSION@/${VERSION}/g" \
                     -e "s/@DATE@/${DATE}/g" \
-                    packaging/rpm/wayle.spec.in >/tmp/wayle.spec
-                  dnf -y --setopt=install_weak_deps=False builddep /tmp/wayle.spec
+                    packaging/rpm/lumen.spec.in >/tmp/lumen.spec
+                  dnf -y --setopt=install_weak_deps=False builddep /tmp/lumen.spec
 
             - name: Setup Rust
               uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -226,7 +226,7 @@ jobs:
             - name: Build Fedora package
               run: |
                   VERSION="${GITHUB_REF_NAME#v}"
-                  ./scripts/ci/build-packages.sh "wayle-${VERSION}-${{ matrix.arch }}-linux.tar.gz" "${VERSION}" rpm
+                  ./scripts/ci/build-packages.sh "lumen-${VERSION}-${{ matrix.arch }}-linux.tar.gz" "${VERSION}" rpm
 
             - name: Upload to release
               env:

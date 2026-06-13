@@ -1,38 +1,38 @@
 "area:shell":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-shell/**"
+          - any-glob-to-any-file: "crates/lumen-shell/**"
 
 "area:widgets":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-widgets/**"
+          - any-glob-to-any-file: "crates/lumen-widgets/**"
 
 "area:styling":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-styling/**"
+          - any-glob-to-any-file: "crates/lumen-styling/**"
 
 "area:config":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-config/**"
+          - any-glob-to-any-file: "crates/lumen-config/**"
 
 "area:icons":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-icons/**"
+          - any-glob-to-any-file: "crates/lumen-icons/**"
 
 "area:i18n":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-i18n/**"
+          - any-glob-to-any-file: "crates/lumen-i18n/**"
 
 "area:ipc":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-ipc/**"
+          - any-glob-to-any-file: "crates/lumen-ipc/**"
 
 "area:cli":
     - changed-files:
-          - any-glob-to-any-file: "wayle/**"
+          - any-glob-to-any-file: "lumen/**"
 
 "area:derive":
     - changed-files:
-          - any-glob-to-any-file: "crates/wayle-derive/**"
+          - any-glob-to-any-file: "crates/lumen-derive/**"
 
 "area:ci":
     - changed-files:

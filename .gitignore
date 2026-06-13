@@ -1,8 +1,8 @@
 target/
 dist/
-wayle-design
+lumen-design
 
-wayle-shell.ftl
+lumen-shell.ftl
 # Temporary sandboxes
-Wayle
+Lumen
 sandbox/

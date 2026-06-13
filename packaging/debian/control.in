@@ -1,4 +1,4 @@
-Source: wayle
+Source: lumen
 Section: utils
 Priority: optional
 Maintainer: @MAINTAINER@
@@ -7,11 +7,11 @@ Build-Depends:
  desktop-file-utils
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
-Homepage: https://wayle.app/
-Vcs-Git: https://github.com/wayle-rs/wayle.git
-Vcs-Browser: https://github.com/wayle-rs/wayle
+Homepage: https://lumen.app/
+Vcs-Git: https://github.com/lumen-rs/lumen.git
+Vcs-Browser: https://github.com/lumen-rs/lumen
 
-Package: wayle
+Package: lumen
 Architecture: amd64 arm64
 Depends:
  ${shlibs:Depends},
@@ -25,6 +25,6 @@ Suggests:
  power-profiles-daemon,
  pipewire-pulse,
  wireplumber
-Description: Wayland Elements desktop shell
- Wayland Elements is a compositor agnostic shell with extensive customization.
+Description: Lumen desktop shell
+ Lumen is a compositor agnostic Wayland shell with extensive customization.
  It includes a bar, notifications, OSD, wallpaper, and device controls.

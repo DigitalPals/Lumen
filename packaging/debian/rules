@@ -14,28 +14,28 @@ override_dh_strip:
 	dh_strip --no-automatic-dbgsym
 
 override_dh_auto_install:
-	install -d debian/wayle/usr/bin
-	install -m 0755 wayle debian/wayle/usr/bin/wayle
-	install -m 0755 wayle-settings debian/wayle/usr/bin/wayle-settings
+	install -d debian/lumen/usr/bin
+	install -m 0755 lumen debian/lumen/usr/bin/lumen
+	install -m 0755 lumen-settings debian/lumen/usr/bin/lumen-settings
 
-	install -d debian/wayle/usr/lib/systemd/user
-	install -m 0644 wayle.service debian/wayle/usr/lib/systemd/user/wayle.service
+	install -d debian/lumen/usr/lib/systemd/user
+	install -m 0644 lumen.service debian/lumen/usr/lib/systemd/user/lumen.service
 
-	install -d debian/wayle/usr/share/applications
-	install -m 0644 com.wayle.settings.desktop debian/wayle/usr/share/applications/com.wayle.settings.desktop
-	desktop-file-validate debian/wayle/usr/share/applications/com.wayle.settings.desktop
+	install -d debian/lumen/usr/share/applications
+	install -m 0644 com.lumen.settings.desktop debian/lumen/usr/share/applications/com.lumen.settings.desktop
+	desktop-file-validate debian/lumen/usr/share/applications/com.lumen.settings.desktop
 
-	install -d debian/wayle/usr/share/icons/hicolor/scalable/apps
-	install -m 0644 wayle-settings.svg debian/wayle/usr/share/icons/hicolor/scalable/apps/wayle-settings.svg
+	install -d debian/lumen/usr/share/icons/hicolor/scalable/apps
+	install -m 0644 lumen-settings.svg debian/lumen/usr/share/icons/hicolor/scalable/apps/lumen-settings.svg
 
-	install -d debian/wayle/usr/share/icons/hicolor/scalable/actions
-	install -m 0644 icons/hicolor/scalable/actions/*.svg debian/wayle/usr/share/icons/hicolor/scalable/actions/
+	install -d debian/lumen/usr/share/icons/hicolor/scalable/actions
+	install -m 0644 icons/hicolor/scalable/actions/*.svg debian/lumen/usr/share/icons/hicolor/scalable/actions/
 
-	install -d debian/wayle/usr/share/bash-completion/completions
-	install -m 0644 completions/completions.bash debian/wayle/usr/share/bash-completion/completions/wayle
+	install -d debian/lumen/usr/share/bash-completion/completions
+	install -m 0644 completions/completions.bash debian/lumen/usr/share/bash-completion/completions/lumen
 
-	install -d debian/wayle/usr/share/zsh/vendor-completions
-	install -m 0644 completions/_wayle debian/wayle/usr/share/zsh/vendor-completions/_wayle
+	install -d debian/lumen/usr/share/zsh/vendor-completions
+	install -m 0644 completions/_lumen debian/lumen/usr/share/zsh/vendor-completions/_lumen
 
-	install -d debian/wayle/usr/share/fish/vendor_completions.d
-	install -m 0644 completions/wayle.fish debian/wayle/usr/share/fish/vendor_completions.d/wayle.fish
+	install -d debian/lumen/usr/share/fish/vendor_completions.d
+	install -m 0644 completions/lumen.fish debian/lumen/usr/share/fish/vendor_completions.d/lumen.fish

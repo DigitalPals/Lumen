@@ -1,0 +1,75 @@
+# Prebuilt upstream binary: no source to compile, so no useful debuginfo
+# can be produced. Disable debug_package to avoid an empty subpackage.
+%global debug_package %{nil}
+%global _build_id_links none
+
+Name:           lumen
+Version:        @VERSION@
+Release:        1%{?dist}
+Summary:        Lumen - a compositor agnostic Wayland shell with extensive customization
+License:        Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND CC0-1.0 AND CDLA-Permissive-2.0 AND ISC AND MIT AND OpenSSL AND Unicode-3.0 AND Zlib
+URL:            https://lumen.app/
+Source0:        https://github.com/lumen-rs/lumen/releases/download/v%{version}/lumen-%{version}-%{_arch}-linux.tar.gz
+ExclusiveArch:  x86_64
+
+BuildRequires:  desktop-file-utils
+BuildRequires:  systemd-rpm-macros
+Requires:       hicolor-icon-theme
+Suggests:       pipewire-pulseaudio
+Suggests:       wireplumber
+Suggests:       NetworkManager
+Suggests:       bluez
+Suggests:       upower
+Suggests:       power-profiles-daemon
+
+%description
+Lumen is a compositor agnostic Wayland shell with extensive customization.
+
+%prep
+%setup -q -n lumen-%{version}-%{_arch}-linux
+
+%build
+# prebuilt upstream binary - nothing to build
+
+%install
+install -d %{buildroot}%{_bindir}
+install -m 0755 lumen %{buildroot}%{_bindir}/lumen
+install -m 0755 lumen-settings %{buildroot}%{_bindir}/lumen-settings
+
+install -d %{buildroot}%{_userunitdir}
+install -m 0644 lumen.service %{buildroot}%{_userunitdir}/lumen.service
+
+install -d %{buildroot}%{_datadir}/applications
+install -m 0644 com.lumen.settings.desktop %{buildroot}%{_datadir}/applications/com.lumen.settings.desktop
+desktop-file-validate %{buildroot}%{_datadir}/applications/com.lumen.settings.desktop
+
+install -d %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
+install -m 0644 lumen-settings.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/lumen-settings.svg
+
+install -d %{buildroot}%{_datadir}/icons/hicolor/scalable/actions
+install -m 0644 icons/hicolor/scalable/actions/*.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/actions/
+
+install -d %{buildroot}%{_datadir}/bash-completion/completions
+install -m 0644 completions/completions.bash %{buildroot}%{_datadir}/bash-completion/completions/lumen
+
+install -d %{buildroot}%{_datadir}/zsh/site-functions
+install -m 0644 completions/_lumen %{buildroot}%{_datadir}/zsh/site-functions/_lumen
+
+install -d %{buildroot}%{_datadir}/fish/vendor_completions.d
+install -m 0644 completions/lumen.fish %{buildroot}%{_datadir}/fish/vendor_completions.d/lumen.fish
+
+%files
+%license LICENSE
+%{_bindir}/lumen
+%{_bindir}/lumen-settings
+%{_userunitdir}/lumen.service
+%{_datadir}/applications/com.lumen.settings.desktop
+%{_datadir}/icons/hicolor/scalable/apps/lumen-settings.svg
+%{_datadir}/icons/hicolor/scalable/actions/*.svg
+%{_datadir}/bash-completion/completions/lumen
+%{_datadir}/zsh/site-functions/_lumen
+%{_datadir}/fish/vendor_completions.d/lumen.fish
+
+%changelog
+* @DATE@ @MAINTAINER@ - @VERSION@-1
+- Packaged upstream binary release

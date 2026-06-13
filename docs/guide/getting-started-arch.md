@@ -6,10 +6,10 @@ title: Getting started on Arch
 
 ## Prebuilt (fastest path)
 
-`wayle-bin` from the AUR ships both binaries prebuilt. If you take this route, skip the build step below and jump straight to [Run](#run).
+`lumen-bin` from the AUR ships both binaries prebuilt. If you take this route, skip the build step below and jump straight to [Run](#run).
 
 ```sh
-yay -S wayle-bin
+yay -S lumen-bin
 ```
 
 ## Install dependencies
@@ -32,18 +32,18 @@ sudo systemctl enable --now bluetooth NetworkManager upower power-profiles-daemo
 ## Build
 
 ```sh
-git clone https://github.com/wayle-rs/wayle
-cd wayle
-cargo install --path wayle
-cargo install --path crates/wayle-settings
+git clone https://github.com/lumen-rs/lumen
+cd lumen
+cargo install --path lumen
+cargo install --path crates/lumen-settings
 ```
 
 ## Icon assets
 
-Wayle ships icons as source files that get copied into your user data directory on first setup. Run this from the cloned repo, **before** deleting it:
+Lumen ships icons as source files that get copied into your user data directory on first setup. Run this from the cloned repo, **before** deleting it:
 
 ```sh
-wayle icons setup
+lumen icons setup
 ```
 
 ## Run
@@ -51,25 +51,25 @@ wayle icons setup
 Start the panel in the background:
 
 ```sh
-wayle panel start
+lumen panel start
 ```
 
-Other lifecycle commands: `wayle panel status`, `wayle panel restart`, `wayle panel stop`.
+Other lifecycle commands: `lumen panel status`, `lumen panel restart`, `lumen panel stop`.
 
 For debugging, run the shell in the foreground so logs print to the terminal:
 
 ```sh
-wayle shell
+lumen shell
 ```
 
 ## Settings GUI
 
 ```sh
-wayle panel settings
+lumen panel settings
 ```
 
-This launches `wayle-settings`, which edits the same config the shell reads. Changes apply live. Anything the GUI doesn't cover can still be edited by hand in `config.toml`.
+This launches `lumen-settings`, which edits the same config the shell reads. Changes apply live. Anything the GUI doesn't cover can still be edited by hand in `config.toml`.
 
 ## Configuration
 
-Wayle reads `$XDG_CONFIG_HOME/wayle/config.toml`, falling back to `~/.config/wayle/config.toml`. On first run, if no config exists, Wayle writes a default one. A JSON schema is written to `~/.config/wayle/schema.json` at startup, which editors with a TOML LSP can use for validation and completion.
+Lumen reads `$XDG_CONFIG_HOME/lumen/config.toml`, falling back to `~/.config/lumen/config.toml`. On first run, if no config exists, Lumen writes a default one. A JSON schema is written to `~/.config/lumen/schema.json` at startup, which editors with a TOML LSP can use for validation and completion.

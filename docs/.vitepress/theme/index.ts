@@ -1,4 +1,4 @@
 import DefaultTheme from 'vitepress/theme'
-import './wayle.css'
+import './lumen.css'
 
 export default DefaultTheme

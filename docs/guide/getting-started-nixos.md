@@ -4,21 +4,21 @@ title: Getting started on NixOS
 
 # Getting started on NixOS
 
-Requires NixOS unstable or 25.11. Note that Wayle was added only recently, so update to the latest version before trying to install it.
+Requires NixOS unstable or 25.11. Note that Lumen was added only recently, so update to the latest version before trying to install it.
 
 ## Install package
 
-Wayle is available as `pkgs.wayle` package, but if you use home-manager there is a module so you don't have to install the package manually.
+Lumen is available as `pkgs.lumen` package, but if you use home-manager there is a module so you don't have to install the package manually.
 
 ## home-manager usage
 
 ```nix
 # put this directly into your home-manager config or into a home-manager import
 {
-  services.wayle = {
+  services.lumen = {
     enable = true;
 
-    # Whether to automatically install soft dependencies used by wayle that
+    # Whether to automatically install soft dependencies used by lumen that
     # will be required based on your config.
     autoInstallDependencies = true;
 
@@ -27,7 +27,7 @@ Wayle is available as `pkgs.wayle` package, but if you use home-manager there is
     settings = {
       bar = {
         layout = [
-          # add more attribute sets with different monitors if wayle should
+          # add more attribute sets with different monitors if lumen should
           # have different layouts on each
           {
             monitor = "DP-1"; # replace "DP-1" with "*" for all monitors
@@ -64,7 +64,7 @@ Wayle is available as `pkgs.wayle` package, but if you use home-manager there is
         theme-provider = "wallust";
       };
       # the following wallpaper option can be omitted if you're not using
-      # wayle's wallpaper engine
+      # lumen's wallpaper engine
       wallpaper = {
         # this will automatically install aww
         engine-enabled = true;
@@ -80,17 +80,17 @@ Wayle is available as `pkgs.wayle` package, but if you use home-manager there is
 ## Settings GUI
 
 ```sh
-wayle panel settings
+lumen panel settings
 ```
 
-This launches `wayle-settings`, which edits the same config the shell reads. Changes apply live. Anything the GUI doesn't cover can still be edited by hand in `config.toml`.
+This launches `lumen-settings`, which edits the same config the shell reads. Changes apply live. Anything the GUI doesn't cover can still be edited by hand in `config.toml`.
 
 > [!WARNING]
 > If you configured theming using matugen/wallust/pywal or wallpapers using AWW, do not forget to install these dependencies! Home-manager module will do this automatically for you.
 
-After configuring Wayle using GUI, there should be a new `.config/wayle/runtime.toml` file. To automatically convert it to Nix, run
+After configuring Lumen using GUI, there should be a new `.config/lumen/runtime.toml` file. To automatically convert it to Nix, run
 ```sh
-cd ~/.config/wayle
+cd ~/.config/lumen
 nix-instantiate --eval --expr '(builtins.fromTOML (builtins.readFile ./config.toml)) // (builtins.fromTOML (builtins.readFile ./runtime.toml))' | nixfmt
 ```
 If one of those files does not exist run the following command, replacing `config.toml` with `runtime.toml` if appropriate.
@@ -98,7 +98,7 @@ If one of those files does not exist run the following command, replacing `confi
 nix-instantiate --eval --expr 'builtins.fromTOML (builtins.readFile ./config.toml)' | nixfmt
 ```
 
-Then you can copy-paste this into the `services.wayle.settings` option provided by the home-manager module.
+Then you can copy-paste this into the `services.lumen.settings` option provided by the home-manager module.
 
 ## Configuration
 

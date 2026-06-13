@@ -1,13 +1,13 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Wayle',
+  title: 'Lumen',
   description: 'A configurable desktop shell for Wayland.',
   cleanUrls: true,
   lastUpdated: true,
 
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/wayle.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/lumen.svg' }],
   ],
 
   markdown: {
@@ -18,7 +18,7 @@ export default defineConfig({
   },
 
   themeConfig: {
-    logo: '/wayle.svg',
+    logo: '/lumen.svg',
 
     nav: [
       { text: 'Guide', link: '/guide/getting-started', activeMatch: '^/guide/' },
@@ -114,17 +114,17 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/wayle-rs/wayle' },
+      { icon: 'github', link: 'https://github.com/lumen-rs/lumen' },
       { icon: 'discord', link: 'https://discord.gg/GYRGnNMf2c' },
     ],
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright 2026 Wayle contributors',
+      copyright: 'Copyright 2026 Lumen contributors',
     },
 
     editLink: {
-      pattern: 'https://github.com/wayle-rs/wayle/edit/master/docs/:path',
+      pattern: 'https://github.com/lumen-rs/lumen/edit/master/docs/:path',
       text: 'Edit this page on GitHub',
     },
 

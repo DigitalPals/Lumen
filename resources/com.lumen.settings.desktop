@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Lumen Settings
+GenericName=Shell Settings
+Comment=Configure the Lumen desktop shell
+Exec=lumen-settings
+Icon=lumen-settings
+Terminal=false
+Categories=Settings;DesktopSettings;GTK;
+Keywords=lumen;settings;shell;bar;wayland;config;
+StartupNotify=true
+StartupWMClass=com.lumen.settings

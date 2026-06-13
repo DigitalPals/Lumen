@@ -51,7 +51,7 @@ build_deb() {
 	TOPDIR="${PWD}/debbuild"
 	BUILD_DIR="${TOPDIR}/BUILD"
 	SOURCE_DIR="${BUILD_DIR}/source"
-	PACKAGE_DIR="${SOURCE_DIR}/wayle-${VERSION}"
+	PACKAGE_DIR="${SOURCE_DIR}/lumen-${VERSION}"
 	OUT_DIR="${TOPDIR}/DEBS/${DEB_ARCHITECTURE}"
 	rm -rf "${BUILD_DIR}"
 	mkdir -p "${SOURCE_DIR}" "${OUT_DIR}"
@@ -75,8 +75,8 @@ build_rpm() {
 	mkdir -p "${TOPDIR}/SOURCES" "${TOPDIR}/SPECS"
 	cp "${ARCHIVE}" "${TOPDIR}/SOURCES/"
 	DATE="$(LC_ALL=C date '+%a %b %d %Y')"
-	render_template packaging/rpm/wayle.spec.in "${TOPDIR}/SPECS/wayle.spec" "${DATE}"
-	rpmbuild --define "_topdir ${TOPDIR}" -bb "${TOPDIR}/SPECS/wayle.spec"
+	render_template packaging/rpm/lumen.spec.in "${TOPDIR}/SPECS/lumen.spec" "${DATE}"
+	rpmbuild --define "_topdir ${TOPDIR}" -bb "${TOPDIR}/SPECS/lumen.spec"
 }
 
 case "${3:-}" in

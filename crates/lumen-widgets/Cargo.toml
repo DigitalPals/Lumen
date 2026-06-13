@@ -1,0 +1,24 @@
+[package]
+name = "lumen-widgets"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Reusable GTK4/Relm4 widget library for Lumen"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+chrono.workspace = true
+futures.workspace = true
+glib.workspace = true
+gtk4 = { workspace = true, features = ["v4_10"] }
+relm4.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tokio-stream.workspace = true
+tokio-util.workspace = true
+lumen-core.workspace = true
+lumen-config.workspace = true
+
+[lints]
+workspace = true

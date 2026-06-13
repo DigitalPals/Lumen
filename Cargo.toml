@@ -1,17 +1,36 @@
 [workspace]
 resolver = "2"
 members = [
-	"crates/wayle-config",
-	"crates/wayle-derive",
-	"crates/wayle-i18n",
-	"crates/wayle-icons",
-	"crates/wayle-idle-inhibit",
-	"crates/wayle-ipc",
-	"crates/wayle-settings",
-	"crates/wayle-shell",
-	"crates/wayle-styling",
-	"crates/wayle-widgets",
-	"wayle",
+	"crates/lumen-audio",
+	"crates/lumen-battery",
+	"crates/lumen-bluetooth",
+	"crates/lumen-brightness",
+	"crates/lumen-cava",
+	"crates/lumen-config",
+	"crates/lumen-core",
+	"crates/lumen-derive",
+	"crates/lumen-hyprland",
+	"crates/lumen-i18n",
+	"crates/lumen-icons",
+	"crates/lumen-idle-inhibit",
+	"crates/lumen-ipc",
+	"crates/lumen-mango",
+	"crates/lumen-media",
+	"crates/lumen-model-usage",
+	"crates/lumen-network",
+	"crates/lumen-niri",
+	"crates/lumen-notification",
+	"crates/lumen-power-profiles",
+	"crates/lumen-settings",
+	"crates/lumen-shell",
+	"crates/lumen-styling",
+	"crates/lumen-sysinfo",
+	"crates/lumen-systray",
+	"crates/lumen-traits",
+	"crates/lumen-wallpaper",
+	"crates/lumen-weather",
+	"crates/lumen-widgets",
+	"lumen",
 ]
 exclude = ["sandbox"]
 
@@ -19,12 +38,13 @@ exclude = ["sandbox"]
 version = "0.6.0"
 edition = "2024"
 rust-version = "1.93"
-repository = "https://github.com/wayle-rs/wayle"
+repository = "https://github.com/lumen-rs/lumen"
 license = "MIT"
 
 [workspace.dependencies]
 async-stream = "0.3.6"
 async-trait = "0.1.89"
+base64 = "0.22"
 bitflags = "2.9.4"
 bytesize = "2"
 chrono = { version = "0.4.42", features = ["clock", "serde"] }
@@ -51,11 +71,12 @@ i18n-embed-fl = "0.10"
 indicatif = "0.18"
 inventory = "0.3"
 libc = "0.2.176"
-libpulse-binding = "2.30.1"
+libpulse-binding = { version = "2.30.1", features = ["pa_v13"] }
 minijinja = { version = "2.15", default-features = false, features = [
 	"builtins",
 	"serde",
 ] }
+niri-ipc = "=25.11.0"
 notify = "8"
 palette = "0.7"
 png = "0.18"
@@ -95,34 +116,35 @@ unic-langid = "0.9"
 wildcard = "0.3"
 zbus = { version = "5.11.0", default-features = false, features = ["tokio"] }
 
-wayle-audio = "0.1.3"
-wayle-battery = "0.1.2"
-wayle-bluetooth = "0.1.2"
-wayle-brightness = "0.1.2"
-wayle-cava = { version = "0.1.2", features = ["vendored"] }
-wayle-core = "0.1.2"
-wayle-hyprland = "0.2.1"
-wayle-mango = "0.1.1"
-wayle-niri = "0.1.0"
-wayle-media = "0.1.2"
-wayle-network = "0.1.2"
-wayle-notification = "0.1.3"
-wayle-power-profiles = "0.1.3"
-wayle-sysinfo = "0.1.2"
-wayle-systray = "0.1.3"
-wayle-traits = "0.1.2"
-wayle-wallpaper = "0.1.3"
-wayle-weather = "0.1.2"
+lumen-audio = { path = "crates/lumen-audio" }
+lumen-battery = { path = "crates/lumen-battery" }
+lumen-bluetooth = { path = "crates/lumen-bluetooth" }
+lumen-brightness = { path = "crates/lumen-brightness" }
+lumen-cava = { path = "crates/lumen-cava", features = ["vendored"] }
+lumen-core = { path = "crates/lumen-core" }
+lumen-hyprland = { path = "crates/lumen-hyprland" }
+lumen-mango = { path = "crates/lumen-mango" }
+lumen-niri = { path = "crates/lumen-niri" }
+lumen-media = { path = "crates/lumen-media" }
+lumen-model-usage = { path = "crates/lumen-model-usage" }
+lumen-network = { path = "crates/lumen-network" }
+lumen-notification = { path = "crates/lumen-notification" }
+lumen-power-profiles = { path = "crates/lumen-power-profiles" }
+lumen-sysinfo = { path = "crates/lumen-sysinfo" }
+lumen-systray = { path = "crates/lumen-systray" }
+lumen-traits = { path = "crates/lumen-traits" }
+lumen-wallpaper = { path = "crates/lumen-wallpaper" }
+lumen-weather = { path = "crates/lumen-weather" }
 
-wayle-config = { path = "crates/wayle-config" }
-wayle-derive = { path = "crates/wayle-derive" }
-wayle-i18n = { path = "crates/wayle-i18n" }
-wayle-icons = { path = "crates/wayle-icons" }
-wayle-idle-inhibit = { path = "crates/wayle-idle-inhibit" }
-wayle-ipc = { path = "crates/wayle-ipc" }
-wayle-shell = { path = "crates/wayle-shell" }
-wayle-styling = { path = "crates/wayle-styling" }
-wayle-widgets = { path = "crates/wayle-widgets" }
+lumen-config = { path = "crates/lumen-config" }
+lumen-derive = { path = "crates/lumen-derive" }
+lumen-i18n = { path = "crates/lumen-i18n" }
+lumen-icons = { path = "crates/lumen-icons" }
+lumen-idle-inhibit = { path = "crates/lumen-idle-inhibit" }
+lumen-ipc = { path = "crates/lumen-ipc" }
+lumen-shell = { path = "crates/lumen-shell" }
+lumen-styling = { path = "crates/lumen-styling" }
+lumen-widgets = { path = "crates/lumen-widgets" }
 
 [workspace.lints.clippy]
 cognitive_complexity = "warn"

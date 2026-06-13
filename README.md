@@ -1,46 +1,48 @@
 <p align="center">
-  <img src="assets/wayle.svg" width="200" alt="Wayle">
+  <img src="assets/lumen.svg" width="200" alt="Lumen">
 </p>
 
-# Wayle
+# Lumen
 
 <p align="center">
-  <a href="https://github.com/wayle-rs/wayle/actions"><img src="https://img.shields.io/github/actions/workflow/status/wayle-rs/wayle/ci.yml?branch=master&style=for-the-badge" alt="CI"></a>
-  <a href="https://github.com/wayle-rs/wayle/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License"></a>
-  <a href="https://wayle.app"><img src="https://img.shields.io/badge/Wiki-wayle.app-7aa2f7?style=for-the-badge" alt="Wiki"></a>
+  <a href="https://github.com/lumen-rs/lumen/actions"><img src="https://img.shields.io/github/actions/workflow/status/lumen-rs/lumen/ci.yml?branch=master&style=for-the-badge" alt="CI"></a>
+  <a href="https://github.com/lumen-rs/lumen/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="https://lumen.app"><img src="https://img.shields.io/badge/Wiki-lumen.app-7aa2f7?style=for-the-badge" alt="Wiki"></a>
 </p>
 
 A Wayland desktop shell with the bar, notifications, OSD, wallpaper, and device controls built in. Written in Rust with GTK4 and Relm4.
 
-Configure it in `config.toml`, through the `wayle-settings` GUI, or with the `wayle config` CLI.
+Lumen is arranged as a single Rust workspace. The service crates live locally under `crates/`, so app and service changes can be developed from one checkout.
+
+Configure it in `config.toml`, through the `lumen-settings` GUI, or with the `lumen config` CLI.
 
 <p align="center">
-  <img src="assets/wayle-preview.png" alt="Wayle desktop shell">
+  <img src="assets/lumen-preview.png" alt="Lumen desktop shell">
 </p>
 
 <p align="center">
-  <img src="assets/wayle-settings-preview.png" alt="Wayle settings GUI">
+  <img src="assets/lumen-settings-preview.png" alt="Lumen settings GUI">
 </p>
 
 ## Documentation
 
-Full guides, reference, and walkthroughs are at **[wayle.app](https://wayle.app)**.
+Full guides, reference, and walkthroughs are at **[lumen.app](https://lumen.app)**.
 
-- [Getting started](https://wayle.app/guide/getting-started) - Installation instructions
-- [Editing config](https://wayle.app/guide/editing-config) - File layout, live reload, imports, CLI editing
-- [Bars and layouts](https://wayle.app/guide/bars-and-layouts) - Per monitor layouts, groups, classes
-- [Themes](https://wayle.app/guide/themes) - Color tokens, theme files
-- [Custom icons](https://wayle.app/guide/custom-icons) - Installing icons, icon sources
-- [Custom modules](https://wayle.app/guide/custom-modules) - Shell-backed bar modules
-- [CLI](https://wayle.app/guide/cli) - Every subcommand
-- [Config reference](https://wayle.app/config/) - Full config documentation
+- [Getting started](https://lumen.app/guide/getting-started) - Installation instructions
+- [Editing config](https://lumen.app/guide/editing-config) - File layout, live reload, imports, CLI editing
+- [Bars and layouts](https://lumen.app/guide/bars-and-layouts) - Per monitor layouts, groups, classes
+- [Themes](https://lumen.app/guide/themes) - Color tokens, theme files
+- [Custom icons](https://lumen.app/guide/custom-icons) - Installing icons, icon sources
+- [Custom modules](https://lumen.app/guide/custom-modules) - Shell-backed bar modules
+- [CLI](https://lumen.app/guide/cli) - Every subcommand
+- [Config reference](https://lumen.app/config/) - Full config documentation
 
 ## Install
 
 Arch Linux binary:
 
 ```sh
-yay -S wayle-bin
+yay -S lumen-bin
 ```
 
 <details>
@@ -112,23 +114,23 @@ sudo systemctl enable --now bluetooth NetworkManager upower power-profiles-daemo
 ### Build and launch:
 
 ```sh
-git clone https://github.com/wayle-rs/wayle
-cd wayle
-cargo install --path wayle
-cargo install --path crates/wayle-settings
-wayle icons setup
-wayle panel start
+git clone <your-lumen-repo-url> Lumen
+cd Lumen
+cargo install --path lumen
+cargo install --path crates/lumen-settings
+lumen icons setup
+lumen panel start
 ```
 
-On a different distro? See [wayle.app/guide/getting-started](https://wayle.app/guide/getting-started) for the library-version reference.
+On a different distro? See [lumen.app/guide/getting-started](https://lumen.app/guide/getting-started) for the library-version reference.
 
-<a href="https://repology.org/project/wayle/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/wayle.svg" alt="Packaging status">
+<a href="https://repology.org/project/lumen/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/lumen.svg" alt="Packaging status">
 </a>
 
 ## Configuration
 
-The config file is at `~/.config/wayle/config.toml`. Changes reload on save:
+The config file is at `~/.config/lumen/config.toml`. Changes reload on save:
 
 ```toml
 [bar]
@@ -145,11 +147,11 @@ right = ["volume", "network", "bluetooth", "battery"]
 format = "%H:%M"
 ```
 
-Every field is documented at [wayle.app/config](https://wayle.app/config/).
+Every field is documented at [lumen.app/config](https://lumen.app/config/).
 
 ## Requirements
 
-A Wayland compositor that implements the `wlr-layer-shell` protocol. Compositor-specific modules currently target Hyprland, Niri and Mango; Sway support is in planned soon.
+A Wayland compositor that implements the `wlr-layer-shell` protocol. Compositor-specific modules currently target Hyprland, Niri and Mango; Sway support is planned.
 
 ## Credits
 

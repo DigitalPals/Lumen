@@ -24,7 +24,7 @@ Icon source for app volume entries in the dropdown.
 
 | Value | Meaning |
 |---|---|
-| `"mapped"` | Wayle's curated symbolic icons matched by app name. |
+| `"mapped"` | Lumen's curated symbolic icons matched by app name. |
 | `"native"` | Native application icons reported by PulseAudio. |
 
 ## BarButtonVariant {#bar-button-variant}
@@ -39,7 +39,7 @@ Visual style variants for bar buttons.
 
 ## BarCount {#bar-count}
 
-Frequency bar count clamped to 1-256 (mirrors `wayle_cava::BarCount`).
+Frequency bar count clamped to 1-256 (mirrors `lumen_cava::BarCount`).
 
 Number in `[1, 256]`.
 
@@ -333,7 +333,7 @@ Uses the existing `--weight-*` tokens defined in SCSS.
 
 ## Framerate {#framerate}
 
-Visualization framerate clamped to 1-360 fps (mirrors `wayle_cava::Framerate`).
+Visualization framerate clamped to 1-360 fps (mirrors `lumen_cava::Framerate`).
 
 Number in `[1, 360]`.
 
@@ -371,8 +371,8 @@ Source for resolving notification icons.
 
 | Value | Meaning |
 |---|---|
-| `"automatic"` | Use per-notification images when provided, otherwise Wayle's mapped icon. |
-| `"mapped"` | Always use Wayle's mapped icons regardless of what the app provides. |
+| `"automatic"` | Use per-notification images when provided, otherwise Lumen's mapped icon. |
+| `"mapped"` | Always use Lumen's mapped icons regardless of what the app provides. |
 | `"application"` | Use the full application icon chain, falling back to mapped if unavailable. |
 
 ## LabelStrategy {#label-strategy}
@@ -653,7 +653,7 @@ Dynamic providers (Matugen, Pywal, Wallust) inject palette tokens at runtime.
 
 | Value | Meaning |
 |---|---|
-| `"wayle"` | Static theming using Wayle's built-in palettes. |
+| `"lumen"` | Static theming using Lumen's built-in palettes. |
 | `"matugen"` | Dynamic theming via Matugen. |
 | `"pywal"` | Dynamic theming via Pywal. |
 | `"wallust"` | Dynamic theming via Wallust. |

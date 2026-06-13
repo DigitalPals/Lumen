@@ -1,0 +1,72 @@
+[package]
+name = "lumen-shell"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Lumen desktop shell - GUI panel and widgets"
+repository.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[dependencies]
+# gtk4-layer-shell MUST be first - it shims libwayland calls
+gtk4-layer-shell.workspace = true
+gtk4.workspace = true
+gdk4.workspace = true
+bytesize.workspace = true
+chrono.workspace = true
+console.workspace = true
+glob.workspace = true
+i18n-embed.workspace = true
+i18n-embed-fl.workspace = true
+futures.workspace = true
+rust-embed.workspace = true
+indicatif.workspace = true
+notify.workspace = true
+relm4.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tokio-stream.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+evdev = { version = "0.13", features = ["stream-trait"] }
+
+# Service dependencies
+lumen-audio.workspace = true
+lumen-battery.workspace = true
+lumen-bluetooth.workspace = true
+lumen-brightness.workspace = true
+lumen-cava.workspace = true
+lumen-config.workspace = true
+lumen-core.workspace = true
+lumen-ipc.workspace = true
+minijinja.workspace = true
+wildcard.workspace = true
+lumen-hyprland.workspace = true
+lumen-icons.workspace = true
+lumen-idle-inhibit.workspace = true
+lumen-mango.workspace = true
+lumen-media.workspace = true
+lumen-model-usage.workspace = true
+lumen-niri.workspace = true
+lumen-network.workspace = true
+lumen-notification.workspace = true
+lumen-power-profiles.workspace = true
+lumen-styling = { workspace = true }
+lumen-sysinfo.workspace = true
+lumen-systray = { workspace = true, features = ["adapter-gtk"] }
+lumen-wallpaper.workspace = true
+lumen-weather.workspace = true
+lumen-widgets = { workspace = true }
+zbus.workspace = true
+gio-unix = { version = "0.22.6", default-features = false }
+
+[dev-dependencies]
+glob.workspace = true
+
+[lints]
+workspace = true

@@ -133,7 +133,7 @@ The command prints `{"percentage":71,"used":"603G","total":"899G"}`. `percentage
 
 ### Watch Mode: Event-driven volume control
 
-Wayle ships a built-in `volume` module that talks to PulseAudio directly. This custom-module version exists as an illustration of the watch-mode + `on-action` + `icon-map` pattern; in real life, use the built-in.
+Lumen ships a built-in `volume` module that talks to PulseAudio directly. This custom-module version exists as an illustration of the watch-mode + `on-action` + `icon-map` pattern; in real life, use the built-in.
 
 The command subscribes to PulseAudio events via `pactl subscribe`. Every time a sink changes, the script re-queries state and emits a JSON line. Watch mode keeps the command alive and reads one update per line, so the bar redraws the instant PulseAudio reports a change, no polling involved.
 

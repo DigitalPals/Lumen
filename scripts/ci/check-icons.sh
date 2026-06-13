@@ -5,11 +5,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 ICON_DIR="$PROJECT_DIR/resources/icons/hicolor/scalable/actions"
-CODE_DIRS=("$PROJECT_DIR/crates" "$PROJECT_DIR/wayle")
+CODE_DIRS=("$PROJECT_DIR/crates" "$PROJECT_DIR/lumen")
 ICON_PATTERN='"(ld|tb|tbf|md|cm|si)-[a-zA-Z0-9_-]+-symbolic"'
 
 IGNORE=(
-    "cm-wayle-symbolic"
+    "cm-lumen-symbolic"
 )
 
 available=$(
