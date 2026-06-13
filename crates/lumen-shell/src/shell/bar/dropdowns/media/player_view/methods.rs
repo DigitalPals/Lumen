@@ -112,6 +112,11 @@ impl PlayerView {
         }
     }
 
+    pub(super) fn display_length(&self) -> String {
+        self.length
+            .map_or_else(|| t!("dropdown-media-live"), helpers::format_duration)
+    }
+
     pub(super) fn progress_fraction(&self) -> f64 {
         let Some(length) = self.length else {
             return 0.0;
