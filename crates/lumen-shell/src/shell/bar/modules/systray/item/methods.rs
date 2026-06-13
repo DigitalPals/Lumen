@@ -21,6 +21,17 @@ use crate::shell::{
 };
 
 impl SystrayItem {
+    fn target_icon_size_px(&self) -> i32 {
+        const REM_BASE: f32 = 16.0;
+        const BASE_ICON_SIZE_REM: f32 = 1.25;
+
+        let config = self.config.config();
+        let bar_scale = config.bar.scale.get().value();
+        let icon_scale = config.modules.systray.icon_scale.get().value();
+
+        (BASE_ICON_SIZE_REM * icon_scale * bar_scale * REM_BASE).round() as i32
+    }
+
     pub(super) fn request_menu_show(&self, sender: &FactorySender<Self>, coords: Coordinates) {
         if let Some(popover) = self.popover.as_ref()
             && popover.is_visible()
@@ -238,7 +249,9 @@ impl SystrayItem {
         }
 
         let pixmaps = self.item.icon_pixmap.get();
-        if let Some(texture) = select_best_pixmap(&pixmaps).and_then(create_texture_from_pixmap) {
+        if let Some(texture) = select_best_pixmap(&pixmaps, self.target_icon_size_px())
+            .and_then(create_texture_from_pixmap)
+        {
             image.set_paintable(Some(&texture));
             return;
         }

@@ -1,13 +1,18 @@
 use gtk4::{gdk, glib, prelude::Cast};
 use lumen_systray::types::item::IconPixmap;
 
-const TARGET_ICON_SIZE: i32 = 24;
 const ICON_EXTENSIONS: [&str; 3] = ["png", "svg", "xpm"];
 
-pub(super) fn select_best_pixmap(pixmaps: &[IconPixmap]) -> Option<&IconPixmap> {
-    pixmaps
-        .iter()
-        .min_by_key(|p| (p.width - TARGET_ICON_SIZE).abs() + (p.height - TARGET_ICON_SIZE).abs())
+pub(super) fn select_best_pixmap(pixmaps: &[IconPixmap], target_size: i32) -> Option<&IconPixmap> {
+    pixmaps.iter().min_by_key(|pixmap| {
+        let large_enough = pixmap.width >= target_size && pixmap.height >= target_size;
+        let size_delta = (pixmap.width - target_size).abs() + (pixmap.height - target_size).abs();
+
+        // Prefer the smallest pixmap that is at least as large as the rendered
+        // icon size. Falling back to a smaller pixmap is only desirable when the
+        // tray item did not provide a sufficiently detailed image.
+        (!large_enough, size_delta)
+    })
 }
 
 pub(super) fn create_texture_from_pixmap(pixmap: &IconPixmap) -> Option<gdk::Texture> {
@@ -103,7 +108,7 @@ mod tests {
                 data: vec![],
             },
         ];
-        let best = select_best_pixmap(&pixmaps);
+        let best = select_best_pixmap(&pixmaps, 24);
         assert!(best.is_some());
         let best = best.unwrap();
         assert_eq!(best.width, 24);
@@ -129,7 +134,7 @@ mod tests {
                 data: vec![],
             },
         ];
-        let best = select_best_pixmap(&pixmaps);
+        let best = select_best_pixmap(&pixmaps, 24);
         assert!(best.is_some());
         let best = best.unwrap();
         assert_eq!(best.width, 28);
@@ -149,16 +154,35 @@ mod tests {
                 data: vec![],
             },
         ];
-        let best = select_best_pixmap(&pixmaps);
+        let best = select_best_pixmap(&pixmaps, 24);
         assert!(best.is_some());
         let best = best.unwrap();
         assert_eq!(best.width, 20);
     }
 
     #[test]
+    fn select_best_pixmap_uses_configured_target_size() {
+        let pixmaps = vec![
+            IconPixmap {
+                width: 24,
+                height: 24,
+                data: vec![],
+            },
+            IconPixmap {
+                width: 48,
+                height: 48,
+                data: vec![],
+            },
+        ];
+        let best = select_best_pixmap(&pixmaps, 40);
+        assert!(best.is_some());
+        assert_eq!(best.unwrap().width, 48);
+    }
+
+    #[test]
     fn select_best_pixmap_empty() {
         let pixmaps: Vec<IconPixmap> = vec![];
-        let best = select_best_pixmap(&pixmaps);
+        let best = select_best_pixmap(&pixmaps, 24);
         assert!(best.is_none());
     }
 
@@ -169,7 +193,7 @@ mod tests {
             height: 128,
             data: vec![],
         }];
-        let best = select_best_pixmap(&pixmaps);
+        let best = select_best_pixmap(&pixmaps, 24);
         assert!(best.is_some());
         assert_eq!(best.unwrap().width, 128);
     }
@@ -193,7 +217,7 @@ mod tests {
                 data: vec![],
             },
         ];
-        let best = select_best_pixmap(&pixmaps);
+        let best = select_best_pixmap(&pixmaps, 24);
         assert!(best.is_some());
         let best = best.unwrap();
         assert_eq!(best.width, 24);
