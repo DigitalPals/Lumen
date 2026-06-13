@@ -99,7 +99,7 @@
 //! - **Path:** `/com/lumen/Wallpaper`
 //! - **Interface:** `com.lumen.Wallpaper1`
 //!
-//! See [`dbus.md`](https://github.com/lumen-rs/lumen-services/blob/master/lumen-wallpaper/dbus.md) for the full interface specification.
+//! See [`dbus.md`](https://github.com/lumen-rs/lumen/blob/master/crates/lumen-wallpaper/dbus.md) for the full interface specification.
 
 mod backend;
 mod builder;

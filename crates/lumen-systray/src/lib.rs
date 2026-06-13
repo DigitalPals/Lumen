@@ -74,7 +74,7 @@
 //! - **Path:** `/com/lumen/SystemTray`
 //! - **Interface:** `com.lumen.SystemTray1`
 //!
-//! See [`dbus.md`](https://github.com/lumen-rs/lumen-services/blob/master/lumen-systray/dbus.md) for the full interface specification.
+//! See [`dbus.md`](https://github.com/lumen-rs/lumen/blob/master/crates/lumen-systray/dbus.md) for the full interface specification.
 //!
 //! # Service Fields
 //!

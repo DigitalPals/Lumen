@@ -21,6 +21,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             code: ${{ steps.filter.outputs.code }}
+            docs: ${{ steps.filter.outputs.docs }}
         steps:
             - uses: actions/checkout@v6
 
@@ -36,6 +37,32 @@ jobs:
                         - 'packaging/**'
                         - 'Cargo.*'
                         - '.github/workflows/ci.yml'
+                      docs:
+                        - 'docs/**'
+                        - '.github/workflows/ci.yml'
+                        - '.github/workflows/docs-deploy.yml'
+
+    docs:
+        name: Docs
+        needs: changes
+        if: needs.changes.outputs.docs == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: "22"
+                  cache: "npm"
+                  cache-dependency-path: docs/package-lock.json
+
+            - name: Install dependencies
+              working-directory: docs
+              run: npm ci
+
+            - name: Build docs
+              working-directory: docs
+              run: npm run build
 
     lint:
         name: Lint
@@ -277,12 +304,13 @@ jobs:
     ci-status:
         name: CI Status
         if: always()
-        needs: [lint, test, build, ubuntu, fedora]
+        needs: [docs, lint, test, build, ubuntu, fedora]
         runs-on: ubuntu-latest
         steps:
             - name: Check results
               run: |
-                  if [[ "${{ needs.lint.result }}" == "failure" || \
+                  if [[ "${{ needs.docs.result }}" == "failure" || \
+                        "${{ needs.lint.result }}" == "failure" || \
                         "${{ needs.test.result }}" == "failure" || \
                         "${{ needs.build.result }}" == "failure" || \
                         "${{ needs.ubuntu.result }}" == "failure" || \

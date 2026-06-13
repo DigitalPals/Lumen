@@ -117,7 +117,7 @@
 //! - **Path:** `/com/lumen/Audio`
 //! - **Interface:** `com.lumen.Audio1`
 //!
-//! See [`dbus.md`](https://github.com/lumen-rs/lumen-services/blob/master/lumen-audio/dbus.md) for the full interface specification.
+//! See [`dbus.md`](https://github.com/lumen-rs/lumen/blob/master/crates/lumen-audio/dbus.md) for the full interface specification.
 //!
 //! # Service Fields
 //!

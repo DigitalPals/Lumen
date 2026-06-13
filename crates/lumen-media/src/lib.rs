@@ -81,7 +81,7 @@
 //! - **Path:** `/com/lumen/Media`
 //! - **Interface:** `com.lumen.Media1`
 //!
-//! See [`dbus.md`](https://github.com/lumen-rs/lumen-services/blob/master/lumen-media/dbus.md) for the full interface specification.
+//! See [`dbus.md`](https://github.com/lumen-rs/lumen/blob/master/crates/lumen-media/dbus.md) for the full interface specification.
 //!
 //! # Reactive Properties
 //!

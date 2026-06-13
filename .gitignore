@@ -3,6 +3,12 @@ dist/
 lumen-design
 
 lumen-shell.ftl
+
+# Release and packaging artifacts
+/lumen-*-linux.tar.gz
+/debbuild/
+/rpmbuild/
+
 # Temporary sandboxes
 Lumen
 sandbox/

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/lumen-rs/lumen-services/master/assets/lumen-services.svg" width="200" alt="Lumen">
+  <img src="https://raw.githubusercontent.com/lumen-rs/lumen/master/assets/lumen.svg" width="200" alt="Lumen">
 </p>
 
 # lumen-brightness
@@ -48,4 +48,4 @@ On non-systemd systems, direct sysfs writes require `video` group membership.
 
 MIT
 
-Part of [lumen-services](https://github.com/lumen-rs/lumen-services).
+Part of [Lumen](https://github.com/lumen-rs/lumen).

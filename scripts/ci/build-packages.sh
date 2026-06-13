@@ -17,6 +17,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_DIR"
 
+if [[ ! -f "${ARCHIVE}" ]]; then
+	echo "Archive not found: ${ARCHIVE}" >&2
+	exit 1
+fi
+
 render_template() {
 	local template="$1"
 	local output="$2"
@@ -53,7 +58,7 @@ build_deb() {
 	SOURCE_DIR="${BUILD_DIR}/source"
 	PACKAGE_DIR="${SOURCE_DIR}/lumen-${VERSION}"
 	OUT_DIR="${TOPDIR}/DEBS/${DEB_ARCHITECTURE}"
-	rm -rf "${BUILD_DIR}"
+	rm -rf "${TOPDIR}"
 	mkdir -p "${SOURCE_DIR}" "${OUT_DIR}"
 	tar xzf "${ARCHIVE}" -C "${SOURCE_DIR}"
 	mv "${SOURCE_DIR}/${ARCHIVE_DIR}" "${PACKAGE_DIR}"
@@ -67,16 +72,24 @@ build_deb() {
 
 	(cd "${PACKAGE_DIR}" && dpkg-buildpackage -us -uc -b -a"${DEB_ARCHITECTURE}")
 	find "${SOURCE_DIR}" -maxdepth 1 -type f -name '*.deb' -exec mv -t "${OUT_DIR}" {} +
+	if ! find "${OUT_DIR}" -maxdepth 1 -type f -name '*.deb' -print -quit | grep -q .; then
+		echo "No Debian package was produced in ${OUT_DIR}" >&2
+		exit 1
+	fi
 }
 
 build_rpm() {
 	TOPDIR="${PWD}/rpmbuild"
-	rm -rf "${TOPDIR}/BUILD" "${TOPDIR}/BUILDROOT"
+	rm -rf "${TOPDIR}"
 	mkdir -p "${TOPDIR}/SOURCES" "${TOPDIR}/SPECS"
 	cp "${ARCHIVE}" "${TOPDIR}/SOURCES/"
 	DATE="$(LC_ALL=C date '+%a %b %d %Y')"
 	render_template packaging/rpm/lumen.spec.in "${TOPDIR}/SPECS/lumen.spec" "${DATE}"
 	rpmbuild --define "_topdir ${TOPDIR}" -bb "${TOPDIR}/SPECS/lumen.spec"
+	if ! find "${TOPDIR}/RPMS" -type f -name '*.rpm' -print -quit | grep -q .; then
+		echo "No RPM package was produced in ${TOPDIR}/RPMS" >&2
+		exit 1
+	fi
 }
 
 case "${3:-}" in

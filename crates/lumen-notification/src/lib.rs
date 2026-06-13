@@ -69,7 +69,7 @@
 //! - **Path:** `/com/lumen/Notifications`
 //! - **Interface:** `com.lumen.Notifications1`
 //!
-//! See [`dbus.md`](https://github.com/lumen-rs/lumen-services/blob/master/lumen-notification/dbus.md) for the full interface specification.
+//! See [`dbus.md`](https://github.com/lumen-rs/lumen/blob/master/crates/lumen-notification/dbus.md) for the full interface specification.
 
 mod builder;
 /// Notification data structures and operations.

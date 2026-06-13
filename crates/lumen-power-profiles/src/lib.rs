@@ -99,7 +99,7 @@
 //! - **Path:** `/com/lumen/PowerProfiles`
 //! - **Interface:** `com.lumen.PowerProfiles1`
 //!
-//! See [`dbus.md`](https://github.com/lumen-rs/lumen-services/blob/master/lumen-power-profiles/dbus.md) for the full interface specification.
+//! See [`dbus.md`](https://github.com/lumen-rs/lumen/blob/master/crates/lumen-power-profiles/dbus.md) for the full interface specification.
 //!
 //! # Control Methods
 //!
