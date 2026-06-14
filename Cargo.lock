@@ -2239,7 +2239,7 @@ checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 
 [[package]]
 name = "lumen"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "clap",
@@ -2376,7 +2376,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-config"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "dotenvy",
  "futures",
@@ -2415,7 +2415,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-derive"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "lumen-config",
  "proc-macro2",
@@ -2446,7 +2446,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-i18n"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
@@ -2459,7 +2459,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-icons"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "futures",
  "gtk4",
@@ -2474,7 +2474,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-idle-inhibit"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "gdk4",
  "glib",
@@ -2484,7 +2484,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-ipc"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "zbus",
 ]
@@ -2627,7 +2627,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-settings"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "futures",
  "gtk4",
@@ -2651,7 +2651,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-shell"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "bytesize",
  "chrono",
@@ -2709,7 +2709,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-styling"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "grass",
  "gtk4",
@@ -2805,7 +2805,7 @@ dependencies = [
 
 [[package]]
 name = "lumen-widgets"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "futures",
