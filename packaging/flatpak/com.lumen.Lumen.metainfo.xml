@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.lumen.Lumen</id>
+  <name>Lumen</name>
+  <summary>Wayland desktop shell</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      Lumen provides a Wayland desktop shell with a bar, notifications,
+      on-screen display, wallpaper, and device controls.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.lumen.Lumen.desktop</launchable>
+  <url type="homepage">https://lumen.app/</url>
+  <provides>
+    <binary>lumen</binary>
+    <binary>lumen-settings</binary>
+  </provides>
+  <content_rating type="oars-1.1" />
+</component>

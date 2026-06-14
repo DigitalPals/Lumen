@@ -31,6 +31,9 @@ override_dh_auto_install:
 	install -d debian/lumen/usr/share/icons/hicolor/scalable/actions
 	install -m 0644 icons/hicolor/scalable/actions/*.svg debian/lumen/usr/share/icons/hicolor/scalable/actions/
 
+	install -d debian/lumen/usr/share/lumen
+	cp -r share/lumen/icons debian/lumen/usr/share/lumen/icons
+
 	install -d debian/lumen/usr/share/bash-completion/completions
 	install -m 0644 completions/completions.bash debian/lumen/usr/share/bash-completion/completions/lumen
 

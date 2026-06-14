@@ -8,6 +8,9 @@ lumen-shell.ftl
 /lumen-*-linux.tar.gz
 /debbuild/
 /rpmbuild/
+/.flatpak-builder/
+/result
+/result-*
 
 # Temporary sandboxes
 Lumen

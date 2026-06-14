@@ -49,6 +49,9 @@ install -m 0644 lumen-settings.svg %{buildroot}%{_datadir}/icons/hicolor/scalabl
 install -d %{buildroot}%{_datadir}/icons/hicolor/scalable/actions
 install -m 0644 icons/hicolor/scalable/actions/*.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/actions/
 
+install -d %{buildroot}%{_datadir}/lumen
+cp -r share/lumen/icons %{buildroot}%{_datadir}/lumen/icons
+
 install -d %{buildroot}%{_datadir}/bash-completion/completions
 install -m 0644 completions/completions.bash %{buildroot}%{_datadir}/bash-completion/completions/lumen
 
@@ -66,6 +69,7 @@ install -m 0644 completions/lumen.fish %{buildroot}%{_datadir}/fish/vendor_compl
 %{_datadir}/applications/com.lumen.settings.desktop
 %{_datadir}/icons/hicolor/scalable/apps/lumen-settings.svg
 %{_datadir}/icons/hicolor/scalable/actions/*.svg
+%{_datadir}/lumen/icons
 %{_datadir}/bash-completion/completions/lumen
 %{_datadir}/zsh/site-functions/_lumen
 %{_datadir}/fish/vendor_completions.d/lumen.fish
