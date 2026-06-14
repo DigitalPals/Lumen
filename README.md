@@ -23,16 +23,16 @@ Configure it in `config.toml`, through the `lumen-settings` GUI, or with the `lu
 
 ## Documentation
 
-Full guides, reference, and walkthroughs are at **[lumen.app](https://lumen.app)**.
+Full guides, reference, and walkthroughs are at **[lumen.cybex.net](https://lumen.cybex.net)**.
 
-- [Getting started](https://lumen.app/guide/getting-started) - Installation instructions
-- [Editing config](https://lumen.app/guide/editing-config) - File layout, live reload, imports, CLI editing
-- [Bars and layouts](https://lumen.app/guide/bars-and-layouts) - Per monitor layouts, groups, classes
-- [Themes](https://lumen.app/guide/themes) - Color tokens, theme files
-- [Custom icons](https://lumen.app/guide/custom-icons) - Installing icons, icon sources
-- [Custom modules](https://lumen.app/guide/custom-modules) - Shell-backed bar modules
-- [CLI](https://lumen.app/guide/cli) - Every subcommand
-- [Config reference](https://lumen.app/config/) - Full config documentation
+- [Getting started](https://lumen.cybex.net/guide/getting-started) - Installation instructions
+- [Editing config](https://lumen.cybex.net/guide/editing-config) - File layout, live reload, imports, CLI editing
+- [Bars and layouts](https://lumen.cybex.net/guide/bars-and-layouts) - Per monitor layouts, groups, classes
+- [Themes](https://lumen.cybex.net/guide/themes) - Color tokens, theme files
+- [Custom icons](https://lumen.cybex.net/guide/custom-icons) - Installing icons, icon sources
+- [Custom modules](https://lumen.cybex.net/guide/custom-modules) - Shell-backed bar modules
+- [CLI](https://lumen.cybex.net/guide/cli) - Every subcommand
+- [Config reference](https://lumen.cybex.net/config/) - Full config documentation
 
 ## Install
 
@@ -109,7 +109,7 @@ sudo systemctl enable --now bluetooth NetworkManager upower power-profiles-daemo
 ### Build and launch:
 
 ```sh
-git clone https://github.com/lumen-rs/lumen.git Lumen
+git clone https://github.com/DigitalPals/Lumen.git Lumen
 cd Lumen
 cargo install --path lumen
 cargo install --path crates/lumen-settings
@@ -117,7 +117,7 @@ lumen icons setup
 lumen panel start
 ```
 
-On a different distro? See [lumen.app/guide/getting-started](https://lumen.app/guide/getting-started) for the library-version reference.
+On a different distro? See [lumen.cybex.net/guide/getting-started](https://lumen.cybex.net/guide/getting-started) for the library-version reference.
 
 ## Configuration
 
@@ -138,7 +138,7 @@ right = ["volume", "network", "bluetooth", "battery"]
 format = "%H:%M"
 ```
 
-Every field is documented at [lumen.app/config](https://lumen.app/config/).
+Every field is documented at [lumen.cybex.net/config](https://lumen.cybex.net/config/).
 
 ## Requirements
 
