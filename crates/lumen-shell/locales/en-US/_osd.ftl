@@ -1,5 +1,10 @@
 ### On-Screen Display
 
+## Slider labels
+osd-volume = Volume
+osd-brightness = Brightness
+osd-microphone = Microphone
+
 ## Toggle labels
 osd-caps-lock = Caps Lock
 osd-num-lock = Num Lock

@@ -76,11 +76,10 @@ impl Osd {
 
         self.last_volume = Some(snapshot);
 
-        let description = device.description.get();
         let icon = volume_icon(percentage, muted);
 
         let event = OsdEvent::Slider {
-            label: description,
+            label: t!("osd-volume"),
             icon: icon.to_string(),
             percentage,
             muted,
@@ -124,7 +123,7 @@ impl Osd {
         self.last_brightness = Some(rounded);
 
         let event = OsdEvent::Slider {
-            label: device.name.to_string(),
+            label: t!("osd-brightness"),
             icon: BRIGHTNESS_ICON.to_string(),
             percentage,
             muted: false,
@@ -170,8 +169,6 @@ impl Osd {
 
         self.last_input_volume = Some(snapshot);
 
-        let description = device.description.get();
-
         let icon = if muted {
             "ld-mic-off-symbolic"
         } else {
@@ -179,7 +176,7 @@ impl Osd {
         };
 
         let event = OsdEvent::Slider {
-            label: description,
+            label: t!("osd-microphone"),
             icon: icon.to_string(),
             percentage,
             muted,

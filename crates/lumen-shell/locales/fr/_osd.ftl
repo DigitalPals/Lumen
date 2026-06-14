@@ -1,5 +1,10 @@
 ### Affichage à l'écran
 
+## Libellés des curseurs
+osd-volume = Volume
+osd-brightness = Luminosité
+osd-microphone = Microphone
+
 ## Libellés des bascules
 osd-caps-lock = Verr. maj.
 osd-num-lock = Verr. num.
