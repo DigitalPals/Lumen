@@ -43,39 +43,39 @@ pub struct BarConfig {
     pub layout: ConfigProperty<Vec<BarLayout>>,
 
     /// Bar-specific scale multiplier for spacing, radius, and other bar elements.
-    #[default(ScaleFactor::new(1.0))]
+    #[default(ScaleFactor::new(0.82))]
     pub scale: ConfigProperty<ScaleFactor>,
 
     /// Gap between bar and its attached screen edge.
     ///
     /// - **Orientation**: Distance from top (horizontal bar) or left (vertical bar)
     #[serde(rename = "inset-edge")]
-    #[default(Spacing::new(0.0))]
+    #[default(Spacing::new(0.5))]
     pub inset_edge: ConfigProperty<Spacing>,
 
     /// Gap at the bar's ends.
     ///
     /// - **Orientation**: Left/right (horizontal bar), top/bottom (vertical bar)
     #[serde(rename = "inset-ends")]
-    #[default(Spacing::new(0.0))]
+    #[default(Spacing::new(0.5))]
     pub inset_ends: ConfigProperty<Spacing>,
 
     /// Internal spacing along bar thickness.
     ///
     /// - **Orientation**: Top/bottom (horizontal bar), left/right (vertical bar)
-    #[default(Spacing::new(0.35))]
+    #[default(Spacing::new(0.18))]
     pub padding: ConfigProperty<Spacing>,
 
     /// Internal spacing at bar ends.
     ///
     /// - **Orientation**: Left/right (horizontal bar), top/bottom (vertical bar)
     #[serde(rename = "padding-ends")]
-    #[default(Spacing::new(0.5))]
+    #[default(Spacing::new(1.3))]
     pub padding_ends: ConfigProperty<Spacing>,
 
     /// Gap between modules and groups on the bar.
     #[serde(rename = "module-gap")]
-    #[default(Spacing::new(0.5))]
+    #[default(Spacing::new(0.75))]
     pub module_gap: ConfigProperty<Spacing>,
 
     /// Bar position on screen edge.
@@ -117,7 +117,7 @@ pub struct BarConfig {
     pub border_color: ConfigProperty<ColorValue>,
 
     /// Corner rounding level for the bar.
-    #[default(RoundingLevel::None)]
+    #[default(RoundingLevel::Md)]
     pub rounding: ConfigProperty<RoundingLevel>,
 
     /// Shadow style for the bar.
@@ -141,17 +141,17 @@ pub struct BarConfig {
 
     /// Button icon size.
     #[serde(rename = "button-icon-size")]
-    #[default(ScaleFactor::new(1.0))]
+    #[default(ScaleFactor::new(0.85))]
     pub button_icon_size: ConfigProperty<ScaleFactor>,
 
     /// Button icon container padding. Only applies to `block-prefix` and `icon-square` variants.
     #[serde(rename = "button-icon-padding")]
-    #[default(ScaleFactor::new(1.0))]
+    #[default(ScaleFactor::new(0.55))]
     pub button_icon_padding: ConfigProperty<ScaleFactor>,
 
     /// Button label text size.
     #[serde(rename = "button-label-size")]
-    #[default(ScaleFactor::new(1.0))]
+    #[default(ScaleFactor::new(0.85))]
     pub button_label_size: ConfigProperty<ScaleFactor>,
 
     /// Button label font weight.
@@ -161,7 +161,7 @@ pub struct BarConfig {
 
     /// Button label container padding.
     #[serde(rename = "button-label-padding")]
-    #[default(ScaleFactor::new(1.0))]
+    #[default(ScaleFactor::new(0.55))]
     pub button_label_padding: ConfigProperty<ScaleFactor>,
 
     /// Corner rounding level for the buttons in the bar.
@@ -171,7 +171,7 @@ pub struct BarConfig {
 
     /// Gap between button icon and label.
     #[serde(rename = "button-gap")]
-    #[default(ScaleFactor::new(1.0))]
+    #[default(ScaleFactor::new(0.45))]
     pub button_gap: ConfigProperty<ScaleFactor>,
 
     /// Icon position relative to label in bar buttons.
@@ -206,7 +206,7 @@ pub struct BarConfig {
 
     /// Gap between modules within a group.
     #[serde(rename = "button-group-module-gap")]
-    #[default(Spacing::new(0.25))]
+    #[default(Spacing::new(0.15))]
     pub button_group_module_gap: ConfigProperty<Spacing>,
 
     /// Background color for button groups.

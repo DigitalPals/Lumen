@@ -170,7 +170,7 @@ icon-map = { muted = "ld-volume-x-symbolic" }
 
 No `on-action` needed: the scroll and click commands change PulseAudio state, PulseAudio publishes the event, the subscribe loop picks it up, and the bar updates. This is the general shape to reach for whenever the underlying system can stream changes (D-Bus signals, `inotifywait`, Hyprland's `socat` stream, and similar).
 
-For state with no event source (CPU temp, disk usage, weather), poll mode is the only option. Built-in modules cover most of the common event-driven surfaces: `battery`, `network`, `bluetooth`, `volume`, `microphone`, `media`, `hyprland-workspaces`. Use custom modules for the gaps.
+For state with no event source (CPU temp, disk usage, weather), poll mode is the only option. Built-in modules cover most of the common event-driven surfaces: `battery`, `network`, `bluetooth`, `volume`, `microphone`, `media`, `workspaces`. Use custom modules for the gaps.
 
 Every field of `[[modules.custom]]` is listed at [`/config/modules/custom`](/config/modules/custom).
 

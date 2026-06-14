@@ -29,6 +29,7 @@ mod systray;
 mod volume;
 pub(crate) mod weather;
 mod window_title;
+mod workspaces;
 mod world_clock;
 
 use std::rc::Rc;
@@ -88,6 +89,7 @@ register_modules! {
     Systray => systray::Factory,
     Volume => volume::Factory,
     Weather => weather::Factory,
+    Workspaces => workspaces::Factory,
     WindowTitle => window_title::Factory,
     WorldClock => world_clock::Factory,
 }

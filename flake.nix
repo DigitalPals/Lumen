@@ -36,6 +36,10 @@
         in
         {
           default = pkgs.mkShell {
+            nativeBuildInputs = with pkgs; [
+              rustPlatform.bindgenHook
+            ];
+
             packages = with pkgs; [
               appstream
               cargo

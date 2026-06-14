@@ -79,14 +79,18 @@ impl Default for BarLayout {
             monitor: String::from("*"),
             extends: None,
             show: true,
-            left: vec![BarItem::Module(ModuleRef::Plain(BarModule::Media))],
+            left: vec![
+                BarItem::Module(ModuleRef::Plain(BarModule::Workspaces)),
+                BarItem::Module(ModuleRef::Plain(BarModule::Media)),
+            ],
             center: vec![BarItem::Module(ModuleRef::Plain(BarModule::Clock))],
             right: vec![
-                BarItem::Module(ModuleRef::Plain(BarModule::Battery)),
-                BarItem::Module(ModuleRef::Plain(BarModule::Bluetooth)),
+                BarItem::Module(ModuleRef::Plain(BarModule::IdleInhibit)),
+                BarItem::Module(ModuleRef::Plain(BarModule::ModelUsage)),
                 BarItem::Module(ModuleRef::Plain(BarModule::Network)),
-                BarItem::Module(ModuleRef::Plain(BarModule::Microphone)),
-                BarItem::Module(ModuleRef::Plain(BarModule::Volume)),
+                BarItem::Module(ModuleRef::Plain(BarModule::Cpu)),
+                BarItem::Module(ModuleRef::Plain(BarModule::Notifications)),
+                BarItem::Module(ModuleRef::Plain(BarModule::Dashboard)),
             ],
         }
     }
@@ -251,6 +255,8 @@ pub enum BarModule {
     Volume,
     /// Weather conditions display.
     Weather,
+    /// Workspace switcher for the active compositor.
+    Workspaces,
     /// Active window title.
     WindowTitle,
     /// World clock with multiple timezones.
@@ -317,6 +323,7 @@ impl BarModule {
             Self::Updates => "updates",
             Self::Volume => "volume",
             Self::Weather => "weather",
+            Self::Workspaces => "workspaces",
             Self::WindowTitle => "window-title",
             Self::WorldClock => "world-clock",
             Self::Custom(_) => unreachable!("Custom modules use dynamic serialization"),
@@ -353,6 +360,7 @@ impl BarModule {
             "updates" => Self::Updates,
             "volume" => Self::Volume,
             "weather" => Self::Weather,
+            "workspaces" => Self::Workspaces,
             "window-title" => Self::WindowTitle,
             "world-clock" => Self::WorldClock,
             _ => return None,
@@ -440,6 +448,7 @@ const BUILTIN_MODULES: &[&str] = &[
     "updates",
     "volume",
     "weather",
+    "workspaces",
     "window-title",
     "world-clock",
 ];
@@ -581,5 +590,25 @@ mod tests {
             toml::from_str(&toml_string).expect("deserialize from string");
 
         assert_eq!(layout, deserialized);
+    }
+
+    #[test]
+    fn workspaces_module_roundtrips() {
+        let module = BarModule::Workspaces;
+        let value = toml::Value::try_from(&module).expect("serialize workspaces module");
+        assert_eq!(value.as_str(), Some("workspaces"));
+
+        let deserialized: BarModule = value.try_into().expect("deserialize workspaces module");
+        assert_eq!(deserialized, module);
+    }
+
+    #[test]
+    fn default_layout_uses_auto_workspaces() {
+        let layout = BarLayout::default();
+
+        assert_eq!(
+            layout.left.first(),
+            Some(&BarItem::Module(ModuleRef::Plain(BarModule::Workspaces)))
+        );
     }
 }
