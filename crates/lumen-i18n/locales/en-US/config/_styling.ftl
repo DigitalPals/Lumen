@@ -11,6 +11,9 @@ settings-styling-rounding = Rounding
 settings-styling-theme-provider = Theme Provider
     .description = Source for color palette (lumen, matugen, pywal, wallust)
 
+settings-styling-palette_base_theme = Active Theme Preset
+    .description = Name of the last applied theme preset
+
 settings-styling-theming-monitor = Theming Monitor
     .description = Monitor whose wallpaper drives color extraction
 
