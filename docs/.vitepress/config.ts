@@ -18,7 +18,13 @@ export default defineConfig({
   },
 
   themeConfig: {
-    logo: '/lumen.svg',
+    logo: {
+      src: '/lumen.svg',
+      alt: 'Lumen',
+      width: 30,
+      height: 30,
+    },
+    siteTitle: false,
 
     nav: [
       { text: 'Guide', link: '/guide/getting-started', activeMatch: '^/guide/' },
@@ -114,7 +120,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/lumen-rs/lumen' },
+      { icon: 'github', link: 'https://github.com/DigitalPals/Lumen' },
       { icon: 'discord', link: 'https://discord.gg/GYRGnNMf2c' },
     ],
 
@@ -124,7 +130,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/lumen-rs/lumen/edit/main/docs/:path',
+      pattern: 'https://github.com/DigitalPals/Lumen/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
     },
 

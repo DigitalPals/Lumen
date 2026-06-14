@@ -31,7 +31,7 @@ sudo systemctl enable --now bluetooth NetworkManager upower power-profiles-daemo
 ## Build
 
 ```sh
-git clone https://github.com/lumen-rs/lumen
+git clone https://github.com/DigitalPals/Lumen lumen
 cd lumen
 cargo install --path lumen
 cargo install --path crates/lumen-settings

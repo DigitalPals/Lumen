@@ -100,6 +100,27 @@
     border-top: 1px solid var(--vp-c-divider);
 }
 
+.VPNavBarTitle .title {
+    gap: 8px;
+}
+
+.VPNavBarTitle .title .logo {
+    width: 30px;
+    height: 30px;
+}
+
+.VPNavBarTitle .title::after {
+    display: block;
+    width: 100px;
+    height: 30px;
+    background: url('/lumen-wordmark-light.svg') center / contain no-repeat;
+    content: '';
+}
+
+.dark .VPNavBarTitle .title::after {
+    background-image: url('/lumen-wordmark-dark.svg');
+}
+
 .dark .vp-doc table {
     border-color: var(--vp-c-divider);
     font-size: 0.95em;
