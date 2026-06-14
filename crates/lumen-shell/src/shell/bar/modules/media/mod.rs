@@ -32,6 +32,7 @@ pub(crate) struct MediaModule {
     config: Arc<ConfigService>,
     active_player_watcher_token: WatcherToken,
     media: Arc<MediaService>,
+    visible: ConfigProperty<bool>,
     dropdowns: Rc<DropdownRegistry>,
 }
 
@@ -58,6 +59,14 @@ impl Component for MediaModule {
     ) -> ComponentParts<Self> {
         let config = init.config.config();
         let media_config = &config.modules.media;
+        let initial_state = init
+            .media
+            .active_player()
+            .map(|player| player.playback_state.get());
+        let visible = ConfigProperty::new(helpers::compute_visibility(
+            initial_state,
+            media_config.hide_when_nothing_playing.get(),
+        ));
 
         let bar_button = BarButton::builder()
             .launch(BarButtonInit {
@@ -77,7 +86,7 @@ impl Component for MediaModule {
                     show_icon: media_config.icon_show.clone(),
                     show_label: media_config.label_show.clone(),
                     show_border: media_config.border_show.clone(),
-                    visible: ConfigProperty::new(true),
+                    visible: visible.clone(),
                 },
                 settings: init.settings,
             })
@@ -96,6 +105,7 @@ impl Component for MediaModule {
             config: init.config,
             active_player_watcher_token: WatcherToken::new(),
             media: init.media,
+            visible,
             dropdowns: init.dropdowns,
         };
         let bar_button = model.bar_button.widget();
@@ -135,15 +145,18 @@ impl Component for MediaModule {
                     self.bar_button.emit(BarButtonInput::SetIcon(icon));
 
                     let state = player.playback_state.get();
+                    self.update_visibility(root, Some(state));
                     Self::update_spinning_state(root, state);
 
                     let token = self.active_player_watcher_token.reset();
                     watchers::spawn_player_watchers(&sender, &player, token);
                 } else {
+                    self.active_player_watcher_token.reset();
                     self.bar_button
                         .emit(BarButtonInput::SetLabel(String::from("--")));
                     self.bar_button
                         .emit(BarButtonInput::SetIcon(media_config.icon_name.get()));
+                    self.update_visibility(root, None);
                     Self::update_spinning_state(root, PlaybackState::Stopped);
                 }
             }
@@ -158,6 +171,7 @@ impl Component for MediaModule {
                     let label = helpers::build_label(media_config, &player);
                     self.bar_button.emit(BarButtonInput::SetLabel(label));
                     let state = player.playback_state.get();
+                    self.update_visibility(root, Some(state));
                     Self::update_spinning_state(root, state);
                 }
             }
@@ -176,6 +190,9 @@ impl Component for MediaModule {
                     let state = player.playback_state.get();
                     Self::update_spinning_state(root, state);
                 }
+            }
+            MediaCmd::HideWhenNothingPlayingChanged => {
+                self.refresh_visibility(root);
             }
         }
     }

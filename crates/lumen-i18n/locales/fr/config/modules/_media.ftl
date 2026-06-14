@@ -23,6 +23,9 @@ settings-modules-media-icon-name = Nom de l'icône
 settings-modules-media-spinning-disc-icon = Icône de disque tournant
     .description = Icône affichée en mode disque tournant
 
+settings-modules-media-hide-when-nothing-playing = Masquer si rien n'est en cours de lecture
+    .description = Masquer le module sauf lorsqu'un média est en cours de lecture
+
 settings-modules-media-border-show = Afficher la bordure
     .description = Afficher une bordure autour du bouton
 

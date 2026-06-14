@@ -28,6 +28,7 @@ right = ["media"]
 | `format` | string | `"{{ title }} - {{ artist }}"` | Format string for the label. |
 | `icon-name` | string | `"ld-music-symbolic"` | Symbolic icon name for default mode. |
 | `spinning-disc-icon` | string | `"ld-disc-3-symbolic"` | Icon shown for spinning-disc mode. |
+| `hide-when-nothing-playing` | bool | `false` | Hide the module unless media is currently playing. |
 | `border-show` | bool | `false` | Display border around button. |
 | `icon-show` | bool | `true` | Display module icon. |
 | `label-show` | bool | `true` | Display text label. |
@@ -124,6 +125,7 @@ player-priority = []
 format = "{{ title }} - {{ artist }}"
 icon-name = "ld-music-symbolic"
 spinning-disc-icon = "ld-disc-3-symbolic"
+hide-when-nothing-playing = false
 border-show = false
 border-color = "blue"
 icon-show = true

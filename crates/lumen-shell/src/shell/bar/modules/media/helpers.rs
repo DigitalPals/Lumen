@@ -82,6 +82,13 @@ pub(crate) fn resolve_icon(ctx: &IconContext<'_>) -> String {
     }
 }
 
+pub(super) fn compute_visibility(
+    state: Option<PlaybackState>,
+    hide_when_nothing_playing: bool,
+) -> bool {
+    !hide_when_nothing_playing || state == Some(PlaybackState::Playing)
+}
+
 pub(super) fn build_label(config: &MediaConfig, player: &Player) -> String {
     let format = config.format.get();
     let title = player.metadata.title.get();
@@ -228,6 +235,22 @@ mod tests {
         });
 
         assert_eq!(result, t!("bar-media-stopped"));
+    }
+
+    #[test]
+    fn visibility_is_always_visible_when_hiding_disabled() {
+        assert!(compute_visibility(None, false));
+        assert!(compute_visibility(Some(PlaybackState::Playing), false));
+        assert!(compute_visibility(Some(PlaybackState::Paused), false));
+        assert!(compute_visibility(Some(PlaybackState::Stopped), false));
+    }
+
+    #[test]
+    fn visibility_hides_unless_playing_when_hiding_enabled() {
+        assert!(!compute_visibility(None, true));
+        assert!(compute_visibility(Some(PlaybackState::Playing), true));
+        assert!(!compute_visibility(Some(PlaybackState::Paused), true));
+        assert!(!compute_visibility(Some(PlaybackState::Stopped), true));
     }
 
     #[test]

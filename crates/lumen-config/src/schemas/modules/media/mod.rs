@@ -95,6 +95,11 @@ pub struct MediaConfig {
     #[default(String::from("ld-disc-3-symbolic"))]
     pub spinning_disc_icon: ConfigProperty<String>,
 
+    /// Hide the module unless media is currently playing.
+    #[serde(rename = "hide-when-nothing-playing")]
+    #[default(false)]
+    pub hide_when_nothing_playing: ConfigProperty<bool>,
+
     /// Display border around button.
     #[serde(rename = "border-show")]
     #[default(false)]

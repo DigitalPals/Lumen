@@ -3,7 +3,7 @@
 use lumen_config::Config;
 
 use crate::{
-    editors::{enum_select::enum_select, text::text, toml_editor::toml_editor},
+    editors::{enum_select::enum_select, text::text, toggle::toggle, toml_editor::toml_editor},
     pages::{
         nav::LeafEntry,
         sections::bar_button::{
@@ -32,6 +32,11 @@ pub(crate) fn entry(config: &Config) -> LeafEntry {
         scroll_up: &module.scroll_up,
         scroll_down: &module.scroll_down,
     };
+
+    let mut display_section = bar_display_section(&fields);
+    display_section
+        .items
+        .push(toggle(&module.hide_when_nothing_playing));
 
     LeafEntry {
         id: "media",
@@ -64,7 +69,7 @@ pub(crate) fn entry(config: &Config) -> LeafEntry {
                         ),
                     ],
                 },
-                bar_display_section(&fields),
+                display_section,
                 colors_section(&fields),
                 actions_section(&fields),
             ],
