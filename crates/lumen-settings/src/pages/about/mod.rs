@@ -24,7 +24,10 @@ const LOCKUP_H: i32 = 76;
 const MODULES: &[(&str, &str)] = &[
     ("settings-nav-battery", "settings-about-module-battery"),
     ("settings-nav-bluetooth", "settings-about-module-bluetooth"),
-    ("settings-nav-brightness", "settings-about-module-brightness"),
+    (
+        "settings-nav-brightness",
+        "settings-about-module-brightness",
+    ),
     ("settings-nav-cava", "settings-about-module-cava"),
     ("settings-nav-clock", "settings-about-module-clock"),
     ("settings-nav-cpu", "settings-about-module-cpu"),
@@ -34,7 +37,10 @@ const MODULES: &[(&str, &str)] = &[
         "settings-nav-hyprland-workspaces",
         "settings-about-module-hyprland-workspaces",
     ),
-    ("settings-nav-hyprsunset", "settings-about-module-hyprsunset"),
+    (
+        "settings-nav-hyprsunset",
+        "settings-about-module-hyprsunset",
+    ),
     (
         "settings-nav-idle-inhibit",
         "settings-about-module-idle-inhibit",
@@ -52,7 +58,10 @@ const MODULES: &[(&str, &str)] = &[
         "settings-about-module-mango-workspaces",
     ),
     ("settings-nav-media", "settings-about-module-media"),
-    ("settings-nav-microphone", "settings-about-module-microphone"),
+    (
+        "settings-nav-microphone",
+        "settings-about-module-microphone",
+    ),
     (
         "settings-nav-model-usage",
         "settings-about-module-model-usage",
@@ -78,7 +87,10 @@ const MODULES: &[(&str, &str)] = &[
         "settings-nav-window-title",
         "settings-about-module-window-title",
     ),
-    ("settings-nav-world-clock", "settings-about-module-world-clock"),
+    (
+        "settings-nav-world-clock",
+        "settings-about-module-world-clock",
+    ),
 ];
 
 pub(crate) fn entry(_config: &Config) -> LeafEntry {

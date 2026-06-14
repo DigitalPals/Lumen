@@ -112,7 +112,7 @@ pub struct StylingConfig {
     /// Active color palette.
     pub palette: PaletteConfig,
 
-    /// Currently active theme preset name 
+    /// Currently active theme preset name
     // and/or base for palette if pallette is modified.
     #[default(String::new())]
     pub palette_base_theme: ConfigProperty<String>,

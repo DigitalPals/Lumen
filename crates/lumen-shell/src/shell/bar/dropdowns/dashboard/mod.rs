@@ -15,6 +15,7 @@ use relm4::{
     gtk::{self, gdk, gio},
     prelude::*,
 };
+
 pub(super) use self::factory::Factory;
 use self::{
     battery_section::{BatterySection, BatterySectionInit},
