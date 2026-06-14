@@ -27,11 +27,27 @@ pub(crate) struct SectionSpec {
 pub(crate) struct PageSpec {
     pub(crate) header_key: &'static str,
     pub(crate) sections: Vec<SectionSpec>,
+    /// Optional custom body, appended after the header. Used by pages like
+    /// About that show static content instead of config-bound setting rows.
+    pub(crate) content: Option<Box<dyn FnOnce() -> gtk::Widget>>,
 }
 
 pub(crate) fn page_spec(header_key: &'static str, sections: Vec<SectionSpec>) -> PageSpec {
     PageSpec {
         header_key,
         sections,
+        content: None,
+    }
+}
+
+/// A page whose body is a single custom widget rather than setting-row sections.
+pub(crate) fn page_custom(
+    header_key: &'static str,
+    content: impl FnOnce() -> gtk::Widget + 'static,
+) -> PageSpec {
+    PageSpec {
+        header_key,
+        sections: Vec::new(),
+        content: Some(Box::new(content)),
     }
 }

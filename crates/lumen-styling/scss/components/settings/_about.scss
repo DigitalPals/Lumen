@@ -1,0 +1,80 @@
+// About page: hero (brand lockup), overview / module-catalogue / credits cards.
+// GTK CSS has no `gap`, so spacing uses child margins (and grid spacing is set
+// on the widget) to mirror the rest of the settings pages.
+
+.settings-about-hero {
+    margin-bottom: var(--space-xl);
+    padding: var(--space-lg) 0;
+}
+
+.settings-about-logo {
+    margin-bottom: var(--space-md);
+}
+
+.settings-about-version {
+    margin-top: var(--space-xs);
+    font-size: var(--text-sm);
+    color: var(--fg-subtle);
+}
+
+.settings-about-tagline {
+    margin-top: var(--space-sm);
+    font-size: var(--text-base);
+    color: var(--fg-muted);
+}
+
+.settings-about-card {
+    margin-bottom: var(--space-md);
+    padding: var(--space-md);
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--rounding-container);
+    box-shadow: var(--shadow-xs);
+}
+
+.settings-about-card-title {
+    margin-bottom: var(--space-sm);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--fg-default);
+}
+
+.settings-about-text {
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+}
+
+.settings-about-modules {
+    margin-top: var(--space-xs);
+}
+
+.settings-about-module-name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--fg-default);
+}
+
+.settings-about-module-desc {
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+}
+
+.settings-about-links {
+    margin-top: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.settings-about-link {
+    margin-right: var(--space-md);
+    padding: 0;
+    color: var(--accent);
+
+    &:hover {
+        color: var(--accent-hover);
+    }
+}
+
+.settings-about-license {
+    font-size: var(--text-xs);
+    color: var(--fg-subtle);
+}

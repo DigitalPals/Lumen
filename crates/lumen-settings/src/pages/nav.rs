@@ -3,7 +3,7 @@
 
 use lumen_config::Config;
 
-use super::{bar, general, modules, notifications, osd, spec::PageSpec, styling, wallpaper};
+use super::{about, bar, general, modules, notifications, osd, spec::PageSpec, styling, wallpaper};
 
 pub(crate) struct LeafEntry {
     pub(crate) id: &'static str,
@@ -40,6 +40,10 @@ pub(crate) fn layout() -> Vec<NavSectionLayout> {
         NavSectionLayout {
             i18n_key: "settings-nav-modules",
             factories: modules::factories(),
+        },
+        NavSectionLayout {
+            i18n_key: "settings-nav-about-section",
+            factories: vec![about::entry],
         },
     ]
 }
