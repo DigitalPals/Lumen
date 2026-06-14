@@ -82,6 +82,7 @@ const MODULES: &[(&str, &str)] = &[
     ("settings-nav-storage", "settings-about-module-storage"),
     ("settings-nav-systray", "settings-about-module-systray"),
     ("settings-nav-volume", "settings-about-module-volume"),
+    ("settings-nav-vpn", "settings-about-module-vpn"),
     ("settings-nav-weather", "settings-about-module-weather"),
     (
         "settings-nav-window-title",

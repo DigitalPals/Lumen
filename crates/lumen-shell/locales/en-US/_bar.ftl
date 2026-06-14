@@ -9,6 +9,16 @@ bar-network-no-wifi = No WiFi
 bar-network-no-ethernet = No Ethernet
 bar-network-offline = Offline
 
+## VPN
+bar-vpn-disconnected = VPN Off
+bar-vpn-connected = Connected
+bar-vpn-status-disconnected = Disconnected
+bar-vpn-connecting = Connecting...
+bar-vpn-count = { $count ->
+    [one] { $count } VPN
+   *[other] { $count } VPNs
+}
+
 ## Battery
 bar-battery-unavailable = N/A
 

@@ -28,6 +28,7 @@ mod separator;
 mod storage;
 mod systray;
 mod volume;
+mod vpn;
 mod weather;
 mod window_title;
 mod world_clock;
@@ -71,6 +72,7 @@ pub use storage::{StorageConfig, StorageMountPoint};
 pub use systray::{SystrayConfig, TrayItemOverride};
 pub use types::TimeFormat;
 pub use volume::{AppIconSource, VolumeConfig};
+pub use vpn::{TailscaleLabel, VpnConfig};
 pub use weather::{TemperatureUnit, WeatherConfig, WeatherProvider};
 pub use window_title::{BUILTIN_MAPPINGS as WINDOW_TITLE_BUILTIN_MAPPINGS, WindowTitleConfig};
 pub use world_clock::WorldClockConfig;
@@ -141,6 +143,8 @@ pub struct ModulesConfig {
     pub systray: SystrayConfig,
     /// Volume control module.
     pub volume: VolumeConfig,
+    /// VPN connection module.
+    pub vpn: VpnConfig,
     /// Weather display module.
     pub weather: WeatherConfig,
     /// Window title module.

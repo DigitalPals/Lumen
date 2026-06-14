@@ -9,6 +9,7 @@ mod model_usage;
 mod network;
 mod notification;
 mod registry;
+mod vpn;
 mod weather;
 
 pub(crate) use self::registry::{
@@ -51,5 +52,6 @@ register_dropdowns! {
     "model-usage" => model_usage::Factory,
     "network" => network::Factory,
     "notification" => notification::Factory,
+    "vpn" => vpn::Factory,
     "weather" => weather::Factory,
 }

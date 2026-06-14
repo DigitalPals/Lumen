@@ -75,11 +75,13 @@ async fn monitor(
             }
             Some(_) = updated.next() => {
                 if let Ok(settings_map) = proxy.get_settings().await {
-                    let (id, uuid, connection_type, wifi_ssid) = extract_identity(&settings_map);
+                    let (id, uuid, connection_type, wifi_ssid, vpn_service_type) =
+                        extract_identity(&settings_map);
                     settings.id.set(id);
                     settings.uuid.set(uuid);
                     settings.connection_type.set(connection_type);
                     settings.wifi_ssid.set(wifi_ssid);
+                    settings.vpn_service_type.set(vpn_service_type);
                 }
             }
             else => {

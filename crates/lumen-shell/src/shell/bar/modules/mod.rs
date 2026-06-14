@@ -27,6 +27,7 @@ mod separator;
 mod storage;
 mod systray;
 mod volume;
+mod vpn;
 pub(crate) mod weather;
 mod window_title;
 mod workspaces;
@@ -88,6 +89,7 @@ register_modules! {
     Storage => storage::Factory,
     Systray => systray::Factory,
     Volume => volume::Factory,
+    Vpn => vpn::Factory,
     Weather => weather::Factory,
     Workspaces => workspaces::Factory,
     WindowTitle => window_title::Factory,

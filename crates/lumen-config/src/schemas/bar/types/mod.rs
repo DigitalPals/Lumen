@@ -253,6 +253,8 @@ pub enum BarModule {
     Updates,
     /// Volume control.
     Volume,
+    /// VPN connection status.
+    Vpn,
     /// Weather conditions display.
     Weather,
     /// Workspace switcher for the active compositor.
@@ -322,6 +324,7 @@ impl BarModule {
             Self::Systray => "systray",
             Self::Updates => "updates",
             Self::Volume => "volume",
+            Self::Vpn => "vpn",
             Self::Weather => "weather",
             Self::Workspaces => "workspaces",
             Self::WindowTitle => "window-title",
@@ -359,6 +362,7 @@ impl BarModule {
             "systray" => Self::Systray,
             "updates" => Self::Updates,
             "volume" => Self::Volume,
+            "vpn" => Self::Vpn,
             "weather" => Self::Weather,
             "workspaces" => Self::Workspaces,
             "window-title" => Self::WindowTitle,
@@ -447,6 +451,7 @@ const BUILTIN_MODULES: &[&str] = &[
     "systray",
     "updates",
     "volume",
+    "vpn",
     "weather",
     "workspaces",
     "window-title",

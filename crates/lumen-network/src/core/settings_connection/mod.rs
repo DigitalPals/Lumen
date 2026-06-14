@@ -47,6 +47,9 @@ pub struct ConnectionSettings {
     /// WiFi SSID, if this is a wireless connection.
     pub wifi_ssid: Property<Option<Ssid>>,
 
+    /// NetworkManager VPN plugin service type, if this is a VPN profile.
+    pub vpn_service_type: Property<Option<String>>,
+
     /// Whether the in-memory state differs from the on-disk state.
     pub unsaved: Property<bool>,
 
@@ -268,11 +271,17 @@ impl ConnectionSettings {
             proxy.get_settings()
         );
 
-        let (id, uuid, connection_type, wifi_ssid) = match settings {
+        let (id, uuid, connection_type, wifi_ssid, vpn_service_type) = match settings {
             Ok(ref settings_map) => extract_identity(settings_map),
             Err(err) => {
                 tracing::debug!("cannot fetch GetSettings for {:?}: {}", path, err);
-                (String::new(), String::new(), ConnectionType::None, None)
+                (
+                    String::new(),
+                    String::new(),
+                    ConnectionType::None,
+                    None,
+                    None,
+                )
             }
         };
 
@@ -284,6 +293,7 @@ impl ConnectionSettings {
             uuid,
             connection_type,
             wifi_ssid,
+            vpn_service_type,
         })
     }
 
@@ -301,6 +311,7 @@ impl ConnectionSettings {
             uuid: Property::new(props.uuid),
             connection_type: Property::new(props.connection_type),
             wifi_ssid: Property::new(props.wifi_ssid),
+            vpn_service_type: Property::new(props.vpn_service_type),
             unsaved: Property::new(props.unsaved),
             flags: Property::new(NMConnectionSettingsFlags::from_bits_truncate(props.flags)),
             filename: Property::new(props.filename),
@@ -346,7 +357,7 @@ impl ConnectionSettings {
 
 fn extract_identity(
     settings_map: &HashMap<String, HashMap<String, OwnedValue>>,
-) -> (String, String, ConnectionType, Option<Ssid>) {
+) -> (String, String, ConnectionType, Option<Ssid>, Option<String>) {
     let connection_group = settings_map.get("connection");
 
     let id = connection_group
@@ -372,7 +383,12 @@ fn extract_identity(
         .and_then(|arr| <Vec<u8>>::try_from(arr).ok())
         .map(Ssid::new);
 
-    (id, uuid, connection_type, wifi_ssid)
+    let vpn_service_type = settings_map
+        .get("vpn")
+        .and_then(|vpn| vpn.get("service-type"))
+        .and_then(|val| String::try_from(val.clone()).ok());
+
+    (id, uuid, connection_type, wifi_ssid, vpn_service_type)
 }
 
 struct SettingsConnectionProperties {
@@ -383,4 +399,5 @@ struct SettingsConnectionProperties {
     uuid: String,
     connection_type: ConnectionType,
     wifi_ssid: Option<Ssid>,
+    vpn_service_type: Option<String>,
 }

@@ -12,6 +12,7 @@ use super::{
     core::access_point::types::{AccessPointParams, LiveAccessPointParams},
     error::Error,
     types::connectivity::ConnectionType,
+    vpn::VpnManager,
     wifi::Wifi,
     wired::Wired,
 };
@@ -57,6 +58,8 @@ pub struct NetworkService {
     pub wired: Property<Option<Arc<Wired>>>,
     /// Primary connection type as reported by NetworkManager.
     pub primary: Property<ConnectionType>,
+    /// VPN profile and active connection manager.
+    pub vpn: Arc<VpnManager>,
 }
 
 impl NetworkService {
@@ -130,6 +133,12 @@ impl NetworkService {
 
         let primary = Property::new(ConnectionType::None);
 
+        let vpn = VpnManager::new(&connection, settings.clone(), &cancellation_token)
+            .await
+            .map_err(|err| {
+                Error::ServiceInitializationFailed(format!("cannot initialize VPN manager: {err}"))
+            })?;
+
         let service = Self {
             zbus_connection: connection.clone(),
             cancellation_token,
@@ -137,6 +146,7 @@ impl NetworkService {
             wifi: Property::new(wifi),
             wired: Property::new(wired),
             primary,
+            vpn,
         };
 
         service.start_monitoring().await?;

@@ -27,6 +27,7 @@ mod separator;
 mod storage;
 mod systray;
 mod volume;
+mod vpn;
 mod weather;
 mod window_title;
 mod world_clock;
@@ -64,6 +65,7 @@ pub(crate) fn factories() -> Vec<fn(&Config) -> LeafEntry> {
         storage::entry,
         systray::entry,
         volume::entry,
+        vpn::entry,
         weather::entry,
         window_title::entry,
         world_clock::entry,
