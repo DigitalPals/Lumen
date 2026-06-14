@@ -21,7 +21,6 @@ right = ["niri-workspaces"]
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `min-workspace-count` | u8 | `0` | Always-visible ceiling for numerically-named workspaces. |
 | `monitor-specific` | bool | `true` | Show only workspaces on this bar's monitor. |
 | `hide-trailing-empty` | bool | `true` | Hide niri's auto-allocated trailing empty workspace. |
 | `display-mode` | [`DisplayMode`](/config/types#display-mode) | `"label"` | What identifies each workspace button. |
@@ -52,16 +51,6 @@ right = ["niri-workspaces"]
 | `right-click` | [`WorkspaceClickAction`](/config/types#workspace-click-action) | `""` | Action on right click. |
 | `scroll-up` | [`WorkspaceClickAction`](/config/types#workspace-click-action) | `"focus:previous"` | Action on scroll up. |
 | `scroll-down` | [`WorkspaceClickAction`](/config/types#workspace-click-action) | `"focus:next"` | Action on scroll down. |
-
-::: details More about `min-workspace-count`
-
-Workspaces whose name parses to an integer at or below this value
-stay visible even when empty. Workspaces with non-numeric names
-and those above the ceiling follow the normal empty/occupied
-filtering. When `0` (default), no extra workspaces are forced
-visible.
-
-:::
 
 ::: details More about `monitor-specific`
 
@@ -164,7 +153,6 @@ Maps window `app_id` or title to symbolic icon names. Supports:
 
 ```toml
 [modules.niri-workspaces]
-min-workspace-count = 0
 monitor-specific = true
 hide-trailing-empty = true
 display-mode = "label"

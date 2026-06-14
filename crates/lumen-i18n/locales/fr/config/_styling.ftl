@@ -11,6 +11,9 @@ settings-styling-rounding = Arrondis
 settings-styling-theme-provider = Fournisseur de thème
     .description = Source de la palette de couleurs (lumen, matugen, pywal, wallust)
 
+settings-styling-palette_base_theme = Préréglage de thème actif
+    .description = Nom du dernier préréglage de thème appliqué
+
 settings-styling-theming-monitor = Moniteur de thème
     .description = Moniteur dont le fond d'écran pilote l'extraction de couleurs
 

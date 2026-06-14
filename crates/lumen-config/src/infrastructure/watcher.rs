@@ -1,4 +1,8 @@
-use std::{path::PathBuf, sync::Arc, time::Duration};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::Duration,
+};
 
 use notify::{
     Event, RecommendedWatcher, RecursiveMode, Watcher as NotifyWatcher, event::EventKind,
@@ -60,6 +64,8 @@ impl FileWatcher {
             })?;
 
         info!(?config_dir, "Config directory watcher started");
+
+        watch_canonical_config_dir(&mut watcher, &config_dir);
 
         let file_watcher = Self {
             config_service,
@@ -164,6 +170,25 @@ impl FileWatcher {
 }
 
 const DEBOUNCE_DURATION: Duration = Duration::from_millis(100);
+
+fn watch_canonical_config_dir(watcher: &mut RecommendedWatcher, config_dir: &Path) {
+    let config_path = ConfigPaths::main_config();
+    let Ok(canonical_path) = config_path.canonicalize() else {
+        return;
+    };
+    let Some(canonical_dir) = canonical_path.parent() else {
+        return;
+    };
+    if canonical_dir == config_dir {
+        return;
+    }
+
+    if let Err(e) = watcher.watch(canonical_dir, RecursiveMode::NonRecursive) {
+        tracing::warn!(error = %e, ?canonical_dir, "failed to watch canonical config folder");
+    } else {
+        info!(?canonical_dir, "Canonical config folder watcher started");
+    }
+}
 
 async fn run_debounced_event_loop(watcher: FileWatcher, mut rx: mpsc::UnboundedReceiver<Event>) {
     use tokio::time::{Instant, sleep_until};
