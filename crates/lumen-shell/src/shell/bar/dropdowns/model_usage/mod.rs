@@ -350,7 +350,7 @@ impl Component for ModelUsageDropdown {
             });
         }
 
-        let model = Self {
+        let mut model = Self {
             config,
             snapshot: model_usage.usage.get(),
             status: model_usage.status.get(),
@@ -377,6 +377,7 @@ impl Component for ModelUsageDropdown {
         let mut widgets = widgets_init;
         model.apply_size(&root, &widgets);
         model.rebuild_tabs(&mut widgets, &sender);
+        model.normalize_active();
         model.render(&mut widgets);
 
         ComponentParts { model, widgets }
@@ -425,13 +426,14 @@ impl Component for ModelUsageDropdown {
         match message {
             ModelUsageDropdownCmd::ConfigChanged => {
                 self.apply_size(root, widgets);
-                self.active = 0;
+                self.normalize_active();
                 self.rebuild_tabs(widgets, &sender);
                 self.render(widgets);
             }
             ModelUsageDropdownCmd::Loaded => {
                 self.snapshot = self.model_usage.usage.get();
                 self.status = self.model_usage.status.get();
+                self.normalize_active();
                 self.render(widgets);
             }
             ModelUsageDropdownCmd::Tick => {
@@ -528,6 +530,11 @@ impl ModelUsageDropdown {
         self.snapshot
             .as_ref()
             .and_then(|snapshot| snapshot.provider(PROVIDERS[provider_index].kind))
+    }
+
+    fn normalize_active(&mut self) {
+        self.active =
+            normalized_active_position(self.active, &self.order(), self.snapshot.as_deref());
     }
 
     fn updated_text(&self) -> String {
@@ -693,6 +700,28 @@ impl ModelUsageDropdown {
             ui.stack.set_visible_child(&ui.status_card);
         }
     }
+}
+
+fn normalized_active_position(
+    active: usize,
+    order: &[usize],
+    snapshot: Option<&UsageSnapshot>,
+) -> usize {
+    let active = active.min(order.len() - 1);
+    if provider_available(snapshot, order[active]) {
+        return active;
+    }
+
+    order
+        .iter()
+        .position(|provider_index| provider_available(snapshot, *provider_index))
+        .unwrap_or(0)
+}
+
+fn provider_available(snapshot: Option<&UsageSnapshot>, provider_index: usize) -> bool {
+    snapshot
+        .and_then(|snapshot| snapshot.provider(PROVIDERS[provider_index].kind))
+        .is_some_and(|entry| entry.result.is_ok())
 }
 
 fn clear_children(container: &gtk::Box) {
@@ -1134,4 +1163,64 @@ fn build_css(full_scale: f32, dropdown_scale: f32) -> String {
     TEMPLATE
         .replace("@DS@", &format!("{dropdown_scale:.4}"))
         .replace("@FS@", &format!("{full_scale:.4}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use lumen_model_usage::{ModelUsageErrorKind, ProviderUsage};
+
+    fn snapshot(providers: Vec<ProviderEntry>) -> UsageSnapshot {
+        UsageSnapshot {
+            updated_at: Utc::now(),
+            providers,
+        }
+    }
+
+    fn ok(kind: ProviderKind) -> ProviderEntry {
+        ProviderEntry {
+            kind,
+            result: Ok(ProviderUsage {
+                plan: None,
+                account: None,
+                windows: Vec::new(),
+                credits: None,
+            }),
+        }
+    }
+
+    fn err(kind: ProviderKind) -> ProviderEntry {
+        ProviderEntry {
+            kind,
+            result: Err(ModelUsageErrorKind::CredentialsNotFound),
+        }
+    }
+
+    #[test]
+    fn selects_codex_when_only_codex_available_and_claude_is_first() {
+        let snapshot = snapshot(vec![ok(ProviderKind::Codex)]);
+
+        assert_eq!(normalized_active_position(0, &[0, 1], Some(&snapshot)), 1);
+    }
+
+    #[test]
+    fn selects_codex_first_tab_when_codex_is_first() {
+        let snapshot = snapshot(vec![ok(ProviderKind::Codex)]);
+
+        assert_eq!(normalized_active_position(0, &[1, 0], Some(&snapshot)), 0);
+    }
+
+    #[test]
+    fn preserves_current_active_tab_when_it_is_available() {
+        let snapshot = snapshot(vec![ok(ProviderKind::Claude), ok(ProviderKind::Codex)]);
+
+        assert_eq!(normalized_active_position(1, &[0, 1], Some(&snapshot)), 1);
+    }
+
+    #[test]
+    fn falls_back_to_first_tab_when_no_provider_is_available() {
+        let snapshot = snapshot(vec![err(ProviderKind::Claude), err(ProviderKind::Codex)]);
+
+        assert_eq!(normalized_active_position(1, &[0, 1], Some(&snapshot)), 0);
+    }
 }
