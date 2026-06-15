@@ -11,6 +11,7 @@ pub(super) fn forward_row_output(output: VpnRowOutput) -> VpnDropdownMsg {
     match output {
         VpnRowOutput::ConnectProfile(path) => VpnDropdownMsg::ConnectProfile(path),
         VpnRowOutput::DisconnectActive(path) => VpnDropdownMsg::DisconnectActive(path),
+        VpnRowOutput::OpenTailscaleAdmin => VpnDropdownMsg::OpenTailscaleAdmin,
         VpnRowOutput::TailscaleUp => VpnDropdownMsg::TailscaleUp,
         VpnRowOutput::TailscaleDown => VpnDropdownMsg::TailscaleDown,
     }

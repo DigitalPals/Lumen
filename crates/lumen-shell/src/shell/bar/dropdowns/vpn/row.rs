@@ -30,6 +30,7 @@ pub(super) struct VpnRow {
     badge: Option<String>,
     active_connected: bool,
     action: Option<RowAction>,
+    open_admin_on_click: bool,
 }
 
 #[derive(Clone)]
@@ -43,12 +44,14 @@ enum RowAction {
 #[derive(Debug)]
 pub(super) enum VpnRowInput {
     ActionClicked,
+    OpenAdminClicked,
 }
 
 #[derive(Debug)]
 pub(super) enum VpnRowOutput {
     ConnectProfile(OwnedObjectPath),
     DisconnectActive(OwnedObjectPath),
+    OpenTailscaleAdmin,
     TailscaleUp,
     TailscaleDown,
 }
@@ -64,41 +67,48 @@ impl FactoryComponent for VpnRow {
     view! {
         gtk::Box {
             add_css_class: "network-connection-card",
+            set_orientation: gtk::Orientation::Horizontal,
 
+            #[name = "row_body"]
             gtk::Box {
-                #[watch]
-                set_css_classes: &self.icon_classes(),
-                set_hexpand: false,
-
-                gtk::Image {
-                    #[watch]
-                    set_icon_name: Some(&self.icon),
-                    set_halign: gtk::Align::Center,
-                    set_valign: gtk::Align::Center,
-                },
-            },
-
-            gtk::Box {
-                add_css_class: "network-connection-info",
-                set_orientation: gtk::Orientation::Vertical,
+                set_orientation: gtk::Orientation::Horizontal,
                 set_hexpand: true,
 
-                gtk::Label {
-                    add_css_class: "network-connection-name",
-                    set_xalign: 0.0,
-                    set_ellipsize: pango::EllipsizeMode::End,
-                    set_max_width_chars: 1,
+                gtk::Box {
                     #[watch]
-                    set_label: &self.name,
+                    set_css_classes: &self.icon_classes(),
+                    set_hexpand: false,
+
+                    gtk::Image {
+                        #[watch]
+                        set_icon_name: Some(&self.icon),
+                        set_halign: gtk::Align::Center,
+                        set_valign: gtk::Align::Center,
+                    },
                 },
 
-                gtk::Label {
-                    add_css_class: "network-connection-detail",
-                    set_xalign: 0.0,
-                    set_ellipsize: pango::EllipsizeMode::End,
-                    set_max_width_chars: 1,
-                    #[watch]
-                    set_label: &self.detail,
+                gtk::Box {
+                    add_css_class: "network-connection-info",
+                    set_orientation: gtk::Orientation::Vertical,
+                    set_hexpand: true,
+
+                    gtk::Label {
+                        add_css_class: "network-connection-name",
+                        set_xalign: 0.0,
+                        set_ellipsize: pango::EllipsizeMode::End,
+                        set_max_width_chars: 1,
+                        #[watch]
+                        set_label: &self.name,
+                    },
+
+                    gtk::Label {
+                        add_css_class: "network-connection-detail",
+                        set_xalign: 0.0,
+                        set_ellipsize: pango::EllipsizeMode::End,
+                        set_max_width_chars: 1,
+                        #[watch]
+                        set_label: &self.detail,
+                    },
                 },
             },
 
@@ -149,6 +159,7 @@ impl FactoryComponent for VpnRow {
                 detail: connection.kind.label().to_owned(),
                 badge: None,
                 action: Some(RowAction::DisconnectActive(connection.active_path)),
+                open_admin_on_click: false,
                 name: connection.name,
             },
             VpnRowInit::Profile { profile, active } => Self {
@@ -165,6 +176,7 @@ impl FactoryComponent for VpnRow {
                 } else {
                     Some(RowAction::ConnectProfile(profile.object_path))
                 },
+                open_admin_on_click: false,
                 name: profile.name,
             },
             VpnRowInit::Tailscale {
@@ -196,6 +208,7 @@ impl FactoryComponent for VpnRow {
                 } else {
                     RowAction::TailscaleUp
                 }),
+                open_admin_on_click: true,
                 name: status
                     .self_name
                     .clone()
@@ -220,7 +233,35 @@ impl FactoryComponent for VpnRow {
 
                 let _ = sender.output(output);
             }
+            VpnRowInput::OpenAdminClicked => {
+                if self.open_admin_on_click {
+                    let _ = sender.output(VpnRowOutput::OpenTailscaleAdmin);
+                }
+            }
         }
+    }
+
+    fn init_widgets(
+        &mut self,
+        _index: &Self::Index,
+        _root: Self::Root,
+        _returned_widget: &<Self::ParentWidget as relm4::factory::FactoryView>::ReturnedWidget,
+        sender: FactorySender<Self>,
+    ) -> Self::Widgets {
+        let widgets = view_output!();
+
+        if self.open_admin_on_click {
+            let click = gtk::GestureClick::new();
+            let click_sender = sender.input_sender().clone();
+            click.connect_released(move |gesture, _, _, _| {
+                gesture.set_state(gtk::EventSequenceState::Claimed);
+                click_sender.emit(VpnRowInput::OpenAdminClicked);
+            });
+            widgets.row_body.add_controller(click);
+            widgets.row_body.set_cursor_from_name(Some("pointer"));
+        }
+
+        widgets
     }
 }
 

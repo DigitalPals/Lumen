@@ -13,6 +13,7 @@ pub(crate) struct VpnDropdownInit {
 pub(crate) enum VpnDropdownMsg {
     ConnectProfile(OwnedObjectPath),
     DisconnectActive(OwnedObjectPath),
+    OpenTailscaleAdmin,
     TailscaleUp,
     TailscaleDown,
 }

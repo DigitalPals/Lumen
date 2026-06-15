@@ -10,7 +10,11 @@ use gtk::prelude::*;
 use lumen_config::ConfigService;
 use lumen_network::NetworkService;
 use lumen_widgets::prelude::*;
-use relm4::{factory::FactoryVecDeque, gtk, prelude::*};
+use relm4::{
+    factory::FactoryVecDeque,
+    gtk::{self, gio},
+    prelude::*,
+};
 
 pub(super) use self::factory::Factory;
 use self::{
@@ -21,6 +25,7 @@ use crate::{i18n::t, shell::bar::dropdowns::scaled_dimension};
 
 const BASE_WIDTH: f32 = 382.0;
 const BASE_HEIGHT: f32 = 512.0;
+const TAILSCALE_ADMIN_MACHINES_URL: &str = "https://login.tailscale.com/admin/machines";
 
 pub(crate) struct VpnDropdown {
     network: Arc<NetworkService>,
@@ -198,7 +203,7 @@ impl Component for VpnDropdown {
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, msg: Self::Input, sender: ComponentSender<Self>, _root: &Self::Root) {
+    fn update(&mut self, msg: Self::Input, sender: ComponentSender<Self>, root: &Self::Root) {
         self.operation_error = None;
 
         match msg {
@@ -207,6 +212,13 @@ impl Component for VpnDropdown {
             }
             VpnDropdownMsg::DisconnectActive(path) => {
                 self.disconnect_active(path, &sender);
+            }
+            VpnDropdownMsg::OpenTailscaleAdmin => {
+                let parent = root
+                    .root()
+                    .and_then(|root| root.downcast::<gtk::Window>().ok());
+                open_tailscale_admin(parent.as_ref());
+                root.popdown();
             }
             VpnDropdownMsg::TailscaleUp => {
                 self.tailscale_up(&sender);
@@ -237,4 +249,13 @@ impl Component for VpnDropdown {
             }
         }
     }
+}
+
+fn open_tailscale_admin(parent: Option<&gtk::Window>) {
+    let launcher = gtk::UriLauncher::new(TAILSCALE_ADMIN_MACHINES_URL);
+    launcher.launch(parent, None::<&gio::Cancellable>, |result| {
+        if let Err(err) = result {
+            tracing::warn!(error = %err, "failed to open Tailscale admin page");
+        }
+    });
 }
