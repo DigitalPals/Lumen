@@ -75,7 +75,11 @@ impl Component for VpnDropdown {
 
                     gtk::Label {
                         add_css_class: "network-connection-detail",
+                        add_css_class: "error",
                         set_halign: gtk::Align::Start,
+                        set_xalign: 0.0,
+                        set_wrap: true,
+                        set_wrap_mode: gtk::pango::WrapMode::WordChar,
                         #[watch]
                         set_visible: model.operation_error.is_some(),
                         #[watch]

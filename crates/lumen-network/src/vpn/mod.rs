@@ -227,10 +227,7 @@ async fn tailscale_status() -> Option<TailscaleStatus> {
     let self_name = self_node
         .and_then(|node| string_at(node, &["HostName"]))
         .or_else(|| self_node.and_then(|node| string_at(node, &["DNSName"])));
-    let tailnet = json
-        .get("CurrentTailnet")
-        .and_then(|tailnet| string_at(tailnet, &["Name"]))
-        .or_else(|| string_at(&json, &["MagicDNSSuffix"]));
+    let tailnet = tailscale_tailnet_name(&json);
 
     Some(TailscaleStatus {
         available: true,
@@ -248,4 +245,47 @@ fn string_at(value: &serde_json::Value, path: &[&str]) -> Option<String> {
     }
 
     current.as_str().map(ToOwned::to_owned)
+}
+
+fn tailscale_tailnet_name(json: &serde_json::Value) -> Option<String> {
+    string_at(json, &["MagicDNSSuffix"]).or_else(|| {
+        json.get("CurrentTailnet")
+            .and_then(|tailnet| string_at(tailnet, &["Name"]))
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::*;
+
+    #[test]
+    fn tailscale_tailnet_name_prefers_magic_dns_suffix() {
+        let status = json!({
+            "MagicDNSSuffix": "risk-bull.ts.net",
+            "CurrentTailnet": {
+                "Name": "digitalbrain.nl"
+            }
+        });
+
+        assert_eq!(
+            tailscale_tailnet_name(&status),
+            Some(String::from("risk-bull.ts.net"))
+        );
+    }
+
+    #[test]
+    fn tailscale_tailnet_name_falls_back_to_current_tailnet_name() {
+        let status = json!({
+            "CurrentTailnet": {
+                "Name": "digitalbrain.nl"
+            }
+        });
+
+        assert_eq!(
+            tailscale_tailnet_name(&status),
+            Some(String::from("digitalbrain.nl"))
+        );
+    }
 }

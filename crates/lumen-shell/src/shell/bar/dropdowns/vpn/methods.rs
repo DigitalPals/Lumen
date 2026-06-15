@@ -113,7 +113,9 @@ impl VpnDropdown {
         sender.command(move |out, _shutdown| async move {
             if let Err(err) = vpn.tailscale_up().await {
                 warn!(error = %err, "tailscale up failed");
-                let _ = out.send(VpnDropdownCmd::OperationFailed(err.to_string()));
+                let _ = out.send(VpnDropdownCmd::OperationFailed(tailscale_error_message(
+                    &err,
+                )));
             }
             vpn.refresh_tailscale().await;
         });
@@ -124,7 +126,9 @@ impl VpnDropdown {
         sender.command(move |out, _shutdown| async move {
             if let Err(err) = vpn.tailscale_down().await {
                 warn!(error = %err, "tailscale down failed");
-                let _ = out.send(VpnDropdownCmd::OperationFailed(err.to_string()));
+                let _ = out.send(VpnDropdownCmd::OperationFailed(tailscale_error_message(
+                    &err,
+                )));
             }
             vpn.refresh_tailscale().await;
         });
@@ -140,5 +144,84 @@ fn replace_rows(
 
     for row in rows {
         guard.push_back(row);
+    }
+}
+
+fn tailscale_error_message(err: &dyn std::error::Error) -> String {
+    let mut current = Some(err);
+
+    while let Some(error) = current {
+        let message = error.to_string();
+        if tailscale_permission_denied(&message) {
+            return String::from(
+                "Tailscale needs permission to connect or disconnect from Lumen. Run `sudo \
+                 tailscale set --operator=$USER` once in a terminal, then try again.",
+            );
+        }
+        current = error.source();
+    }
+
+    err.to_string()
+}
+
+fn tailscale_permission_denied(message: &str) -> bool {
+    message.contains("prefs write access denied")
+        || message.contains("Use 'sudo tailscale")
+        || message.contains("sudo tailscale set --operator")
+}
+
+#[cfg(test)]
+mod tests {
+    use std::error::Error as StdError;
+
+    use super::*;
+
+    #[derive(Debug)]
+    struct ErrorWithSource {
+        source: Box<dyn StdError + Send + Sync>,
+    }
+
+    impl std::fmt::Display for ErrorWithSource {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "cannot stop tailscale")
+        }
+    }
+
+    impl StdError for ErrorWithSource {
+        fn source(&self) -> Option<&(dyn StdError + 'static)> {
+            Some(self.source.as_ref())
+        }
+    }
+
+    #[derive(Debug)]
+    struct MessageError(&'static str);
+
+    impl std::fmt::Display for MessageError {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl StdError for MessageError {}
+
+    #[test]
+    fn tailscale_error_message_explains_operator_permission_fix() {
+        let err = ErrorWithSource {
+            source: Box::new(MessageError(
+                "Access denied: prefs write access denied\n\nUse 'sudo tailscale down'.",
+            )),
+        };
+
+        let message = tailscale_error_message(&err);
+
+        assert!(message.contains("sudo tailscale set --operator=$USER"));
+        assert!(message.contains("then try again"));
+    }
+
+    #[test]
+    fn tailscale_error_message_preserves_unrecognized_errors() {
+        let err = MessageError("cannot stop tailscale");
+
+        assert_eq!(tailscale_error_message(&err), "cannot stop tailscale");
     }
 }
