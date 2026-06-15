@@ -20,10 +20,20 @@ pub(super) fn spawn(
     let active = network.vpn.active.clone();
     let profiles = network.vpn.profiles.clone();
     let tailscale = network.vpn.tailscale.clone();
+    let connected_icon = config.config().modules.vpn.connected_icon.clone();
+    let connecting_icon = config.config().modules.vpn.connecting_icon.clone();
+    let disconnected_icon = config.config().modules.vpn.disconnected_icon.clone();
 
     watch!(
         sender,
-        [active.watch(), profiles.watch(), tailscale.watch()],
+        [
+            active.watch(),
+            profiles.watch(),
+            tailscale.watch(),
+            connected_icon.watch(),
+            connecting_icon.watch(),
+            disconnected_icon.watch()
+        ],
         |out| {
             let _ = out.send(VpnDropdownCmd::StateChanged);
         }

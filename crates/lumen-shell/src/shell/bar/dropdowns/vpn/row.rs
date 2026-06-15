@@ -1,4 +1,5 @@
 use gtk::{pango, prelude::*};
+use lumen_config::schemas::modules::VpnConfig;
 use lumen_network::vpn::{TailscaleStatus, VpnConnection, VpnKind, VpnProfile, VpnState};
 use lumen_widgets::prelude::*;
 use relm4::{gtk, prelude::*};
@@ -7,16 +8,27 @@ use zbus::zvariant::OwnedObjectPath;
 use crate::i18n::t;
 
 pub(super) enum VpnRowInit {
-    Active(VpnConnection),
-    Profile { profile: VpnProfile, active: bool },
-    Tailscale(TailscaleStatus),
+    Active {
+        connection: VpnConnection,
+        icon: String,
+    },
+    Profile {
+        profile: VpnProfile,
+        active: bool,
+    },
+    Tailscale {
+        status: TailscaleStatus,
+        active: bool,
+        icon: String,
+    },
 }
 
 pub(super) struct VpnRow {
     name: String,
     detail: String,
-    icon: &'static str,
-    badge: String,
+    icon: String,
+    badge: Option<String>,
+    active_connected: bool,
     action: Option<RowAction>,
 }
 
@@ -54,11 +66,13 @@ impl FactoryComponent for VpnRow {
             add_css_class: "network-connection-card",
 
             gtk::Box {
-                add_css_class: "network-connection-icon",
+                #[watch]
+                set_css_classes: &self.icon_classes(),
                 set_hexpand: false,
 
                 gtk::Image {
-                    set_icon_name: Some(self.icon),
+                    #[watch]
+                    set_icon_name: Some(&self.icon),
                     set_halign: gtk::Align::Center,
                     set_valign: gtk::Align::Center,
                 },
@@ -96,18 +110,31 @@ impl FactoryComponent for VpnRow {
                 SubtleBadge {
                     add_css_class: "network-connection-status",
                     #[watch]
-                    set_label: &self.badge,
+                    set_visible: self.badge.is_some(),
+                    #[watch]
+                    set_label: self.badge.as_deref().unwrap_or(""),
                 },
 
                 #[template]
                 GhostButton {
                     #[watch]
-                    set_visible: self.action.is_some(),
+                    set_visible: self.action.is_some() && !self.action_icon_only(),
                     #[template_child]
                     label {
                         #[watch]
                         set_label: &self.action_label(),
                     },
+                    connect_clicked => VpnRowInput::ActionClicked,
+                },
+
+                #[template]
+                GhostIconButton {
+                    add_css_class: "network-action-disconnect",
+                    #[watch]
+                    set_visible: self.action.is_some() && self.action_icon_only(),
+                    set_icon_name: "ld-unplug-symbolic",
+                    #[watch]
+                    set_tooltip_text: Some(&self.action_label()),
                     connect_clicked => VpnRowInput::ActionClicked,
                 },
             },
@@ -116,21 +143,23 @@ impl FactoryComponent for VpnRow {
 
     fn init_model(init: Self::Init, _index: &Self::Index, _sender: FactorySender<Self>) -> Self {
         match init {
-            VpnRowInit::Active(connection) => Self {
-                icon: icon_for_kind(&connection.kind),
+            VpnRowInit::Active { connection, icon } => Self {
+                active_connected: connection.state == VpnState::Connected,
+                icon,
                 detail: connection.kind.label().to_owned(),
-                badge: state_label(connection.state),
+                badge: None,
                 action: Some(RowAction::DisconnectActive(connection.active_path)),
                 name: connection.name,
             },
             VpnRowInit::Profile { profile, active } => Self {
-                icon: icon_for_kind(&profile.kind),
+                icon: icon_for_kind(&profile.kind).to_owned(),
                 detail: profile.kind.label().to_owned(),
-                badge: if active {
+                badge: Some(if active {
                     t!("dropdown-vpn-connected")
                 } else {
                     t!("dropdown-vpn-saved")
-                },
+                }),
+                active_connected: false,
                 action: if active {
                     None
                 } else {
@@ -138,17 +167,30 @@ impl FactoryComponent for VpnRow {
                 },
                 name: profile.name,
             },
-            VpnRowInit::Tailscale(status) => Self {
-                icon: icon_for_kind(&VpnKind::Tailscale),
+            VpnRowInit::Tailscale {
+                status,
+                active,
+                icon,
+            } => Self {
+                icon: if active {
+                    icon
+                } else {
+                    icon_for_kind(&VpnKind::Tailscale).to_owned()
+                },
                 detail: status
                     .tailnet
                     .clone()
                     .unwrap_or_else(|| String::from("Tailscale")),
-                badge: if status.connected {
-                    t!("dropdown-vpn-connected")
+                badge: if active {
+                    None
                 } else {
-                    status.backend_state.clone()
+                    Some(if status.connected {
+                        t!("dropdown-vpn-connected")
+                    } else {
+                        status.backend_state.clone()
+                    })
                 },
+                active_connected: active && status.connected,
                 action: Some(if status.connected {
                     RowAction::TailscaleDown
                 } else {
@@ -194,6 +236,39 @@ impl VpnRow {
             None => String::new(),
         }
     }
+
+    fn action_icon_only(&self) -> bool {
+        matches!(
+            self.action,
+            Some(RowAction::DisconnectActive(_) | RowAction::TailscaleDown)
+        )
+    }
+
+    fn icon_classes(&self) -> Vec<&'static str> {
+        let mut classes = vec!["network-connection-icon"];
+        if self.active_connected {
+            classes.push("vpn-connected");
+        }
+        classes
+    }
+}
+
+pub(super) fn active_icon_for_state(config: &VpnConfig, state: VpnState) -> String {
+    match state {
+        VpnState::Connected => config.connected_icon.get().clone(),
+        VpnState::Connecting => config.connecting_icon.get().clone(),
+        _ => config.disconnected_icon.get().clone(),
+    }
+}
+
+pub(super) fn tailscale_active_icon(config: &VpnConfig, status: &TailscaleStatus) -> String {
+    if status.backend_state == "Starting" {
+        config.connecting_icon.get().clone()
+    } else if status.connected {
+        config.connected_icon.get().clone()
+    } else {
+        config.disconnected_icon.get().clone()
+    }
 }
 
 fn icon_for_kind(kind: &VpnKind) -> &'static str {
@@ -206,17 +281,5 @@ fn icon_for_kind(kind: &VpnKind) -> &'static str {
         | VpnKind::StrongSwan
         | VpnKind::Other(_) => "ld-shield-symbolic",
         _ => "ld-shield-symbolic",
-    }
-}
-
-fn state_label(state: VpnState) -> String {
-    match state {
-        VpnState::Connected => t!("dropdown-vpn-connected"),
-        VpnState::Connecting => t!("dropdown-vpn-connecting"),
-        VpnState::NeedsAuth => t!("dropdown-vpn-needs-auth"),
-        VpnState::Disconnecting => t!("dropdown-vpn-disconnecting"),
-        VpnState::Failed => t!("dropdown-vpn-failed"),
-        VpnState::Disconnected => t!("dropdown-vpn-disconnected"),
-        VpnState::Unknown => t!("dropdown-vpn-unknown"),
     }
 }

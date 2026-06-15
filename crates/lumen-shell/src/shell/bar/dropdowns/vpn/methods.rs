@@ -21,6 +21,7 @@ impl VpnDropdown {
         let active = self.network.vpn.active.get();
         let profiles = self.network.vpn.profiles.get();
         let tailscale = self.network.vpn.tailscale.get();
+        let config = &self.config.config().modules.vpn;
         let active_profile_paths = active
             .iter()
             .map(|connection| connection.profile_path.clone())
@@ -34,15 +35,23 @@ impl VpnDropdown {
 
         replace_rows(
             &mut self.active_list,
-            active.into_iter().map(VpnRowInit::Active).chain(
-                tailscale.clone().into_iter().filter_map(|status| {
+            active
+                .into_iter()
+                .map(|connection| VpnRowInit::Active {
+                    icon: super::row::active_icon_for_state(config, connection.state),
+                    connection,
+                })
+                .chain(tailscale.clone().into_iter().filter_map(|status| {
                     if status.connected || status.backend_state == "Starting" {
-                        Some(VpnRowInit::Tailscale(status))
+                        Some(VpnRowInit::Tailscale {
+                            icon: super::row::tailscale_active_icon(config, &status),
+                            active: true,
+                            status,
+                        })
                     } else {
                         None
                     }
-                }),
-            ),
+                })),
         );
 
         replace_rows(
@@ -59,7 +68,11 @@ impl VpnDropdown {
                     if status.connected || status.backend_state == "Starting" {
                         None
                     } else {
-                        Some(VpnRowInit::Tailscale(status))
+                        Some(VpnRowInit::Tailscale {
+                            icon: super::row::tailscale_active_icon(config, &status),
+                            active: false,
+                            status,
+                        })
                     }
                 })),
         );

@@ -7,6 +7,7 @@ mod watchers;
 use std::sync::Arc;
 
 use gtk::prelude::*;
+use lumen_config::ConfigService;
 use lumen_network::NetworkService;
 use lumen_widgets::prelude::*;
 use relm4::{factory::FactoryVecDeque, gtk, prelude::*};
@@ -23,6 +24,7 @@ const BASE_HEIGHT: f32 = 512.0;
 
 pub(crate) struct VpnDropdown {
     network: Arc<NetworkService>,
+    config: Arc<ConfigService>,
     scaled_width: i32,
     scaled_height: i32,
     active_list: FactoryVecDeque<VpnRow>,
@@ -173,6 +175,7 @@ impl Component for VpnDropdown {
 
         let mut model = Self {
             network: init.network,
+            config: init.config,
             scaled_width: scaled_dimension(BASE_WIDTH, scale),
             scaled_height: scaled_dimension(BASE_HEIGHT, scale),
             active_list,
