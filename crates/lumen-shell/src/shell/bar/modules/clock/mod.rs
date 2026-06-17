@@ -51,7 +51,7 @@ impl Component for ClockModule {
     ) -> ComponentParts<Self> {
         let config = init.config.config();
         let clock = &config.modules.clock;
-        let formatted_time = helpers::format_time(&clock.format.get());
+        let formatted_time = helpers::format_time(&clock.format.get(), clock.time_format.get());
         let initial_label_len = formatted_time.chars().count();
 
         let bar_button = BarButton::builder()

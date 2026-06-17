@@ -1,9 +1,10 @@
 use chrono::{DateTime, Datelike, Local};
+use lumen_config::schemas::modules::TimeFormat;
 
 use crate::i18n::t;
 
-pub(super) fn is_12h_format(format_str: &str) -> bool {
-    format_str.contains("%I") || format_str.contains("%p")
+pub(super) fn uses_12h_format(time_format: TimeFormat) -> bool {
+    matches!(time_format, TimeFormat::TwelveHour)
 }
 
 pub(super) fn hours_text(now: &DateTime<Local>, use_12h: bool) -> String {

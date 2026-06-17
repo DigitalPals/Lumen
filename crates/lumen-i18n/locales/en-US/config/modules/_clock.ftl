@@ -5,6 +5,9 @@
 settings-modules-clock-format = Time Format
     .description = Time display format using strftime syntax
 
+settings-modules-clock-time-format = Hour Format
+    .description = Toggle between 12-hour and 24-hour clock display
+
 settings-modules-clock-icon-name = Icon Name
     .description = Symbolic icon name
 

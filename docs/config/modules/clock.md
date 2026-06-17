@@ -22,6 +22,7 @@ right = ["clock"]
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `format` | string | `"%a %b %d %I:%M %p"` | Format string using strftime syntax. |
+| `time-format` | [`TimeFormat`](/config/types#time-format) | `"12h"` | Hour format for the clock display. |
 | `icon-name` | string | `"tb-calendar-time-symbolic"` | Symbolic icon name. |
 | `border-show` | bool | `false` | Display border around button. |
 | `icon-show` | bool | `true` | Display module icon. |
@@ -83,6 +84,7 @@ right = ["clock"]
 ```toml
 [modules.clock]
 format = "%a %b %d %I:%M %p"
+time-format = "12h"
 icon-name = "tb-calendar-time-symbolic"
 border-show = false
 border-color = "border-accent"

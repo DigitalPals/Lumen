@@ -40,10 +40,10 @@ fn spawn_time_tick(sender: &ComponentSender<CalendarDropdown>) {
 }
 
 fn spawn_format_watcher(sender: &ComponentSender<CalendarDropdown>, config: &Arc<ConfigService>) {
-    let format_prop = config.config().modules.clock.format.clone();
+    let time_format = config.config().modules.clock.time_format.clone();
 
-    watch!(sender, [format_prop.watch()], |out| {
-        let use_12h = helpers::is_12h_format(&format_prop.get());
+    watch!(sender, [time_format.watch()], |out| {
+        let use_12h = helpers::uses_12h_format(time_format.get());
         let _ = out.send(CalendarDropdownCmd::FormatChanged(use_12h));
     });
 }

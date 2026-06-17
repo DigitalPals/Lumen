@@ -159,8 +159,7 @@ impl Component for CalendarDropdown {
         let now = Local::now();
         let today = now.date_naive();
         let clock_config = &init.config.config().modules.clock;
-        let format_str = clock_config.format.get();
-        let use_12h = helpers::is_12h_format(&format_str);
+        let use_12h = helpers::uses_12h_format(clock_config.time_format.get());
         let show_seconds = clock_config.dropdown_show_seconds.get();
 
         let months = months_array();

@@ -13,12 +13,16 @@ use super::{ClockModule, helpers::format_time, messages::ClockCmd};
 
 pub(super) fn spawn_watchers(sender: &ComponentSender<ClockModule>, clock: &ClockConfig) {
     let interval_stream = IntervalStream::new(interval(Duration::from_secs(1)));
-    let prev_label = Arc::new(Mutex::new(format_time(&clock.format.get())));
+    let prev_label = Arc::new(Mutex::new(format_time(
+        &clock.format.get(),
+        clock.time_format.get(),
+    )));
 
     let format = clock.format.clone();
+    let time_format = clock.time_format.clone();
     let prev = Arc::clone(&prev_label);
     watch!(sender, [interval_stream], |out| {
-        let label = format_time(&format.get());
+        let label = format_time(&format.get(), time_format.get());
         let mut prev = prev.lock().unwrap_or_else(|poison| poison.into_inner());
         if *prev != label {
             *prev = label.clone();
@@ -27,9 +31,10 @@ pub(super) fn spawn_watchers(sender: &ComponentSender<ClockModule>, clock: &Cloc
     });
 
     let format = clock.format.clone();
+    let time_format = clock.time_format.clone();
     let prev = Arc::clone(&prev_label);
-    watch!(sender, [format.watch()], |out| {
-        let label = format_time(&format.get());
+    watch!(sender, [format.watch(), time_format.watch()], |out| {
+        let label = format_time(&format.get(), time_format.get());
         let mut prev = prev.lock().unwrap_or_else(|poison| poison.into_inner());
         if *prev != label {
             *prev = label.clone();

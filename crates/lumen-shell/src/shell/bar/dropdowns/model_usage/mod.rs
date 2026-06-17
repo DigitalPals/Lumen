@@ -1167,8 +1167,9 @@ fn build_css(full_scale: f32, dropdown_scale: f32) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use lumen_model_usage::{ModelUsageErrorKind, ProviderUsage};
+
+    use super::*;
 
     fn snapshot(providers: Vec<ProviderEntry>) -> UsageSnapshot {
         UsageSnapshot {

@@ -4,7 +4,10 @@ use schemars::schema_for;
 use crate::{
     ClickAction, ConfigProperty,
     docs::{ConfigGroup, GroupDefaults, ModuleInfo, ModuleInfoProvider},
-    schemas::styling::{ColorValue, CssToken},
+    schemas::{
+        modules::TimeFormat,
+        styling::{ColorValue, CssToken},
+    },
 };
 
 /// Time display with a calendar dropdown.
@@ -33,6 +36,11 @@ pub struct ClockConfig {
     /// - `"%a %b %d %I:%M %p"` - "Mon Jan 15 02:30 PM"
     #[default(String::from("%a %b %d %I:%M %p"))]
     pub format: ConfigProperty<String>,
+
+    /// Hour format for the clock display.
+    #[serde(rename = "time-format")]
+    #[default(TimeFormat::default())]
+    pub time_format: ConfigProperty<TimeFormat>,
 
     /// Symbolic icon name.
     #[serde(rename = "icon-name")]
