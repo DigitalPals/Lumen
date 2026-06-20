@@ -213,6 +213,8 @@ pub enum BarModule {
     Cpu,
     /// Quick access dashboard button.
     Dashboard,
+    /// Hermes Agent chat dropdown.
+    HermesChat,
     /// Compositor keybind mode indicator (submaps in Hyprland, modes in Sway/River).
     KeybindMode,
     /// Hyprland workspace switcher.
@@ -304,6 +306,7 @@ impl BarModule {
             Self::Clock => "clock",
             Self::Cpu => "cpu",
             Self::Dashboard => "dashboard",
+            Self::HermesChat => "hermes-chat",
             Self::KeybindMode => "keybind-mode",
             Self::HyprlandWorkspaces => "hyprland-workspaces",
             Self::IdleInhibit => "idle-inhibit",
@@ -342,6 +345,7 @@ impl BarModule {
             "clock" => Self::Clock,
             "cpu" => Self::Cpu,
             "dashboard" => Self::Dashboard,
+            "hermes-chat" => Self::HermesChat,
             "keybind-mode" => Self::KeybindMode,
             "hyprland-workspaces" => Self::HyprlandWorkspaces,
             "idle-inhibit" => Self::IdleInhibit,
@@ -431,6 +435,7 @@ const BUILTIN_MODULES: &[&str] = &[
     "clock",
     "cpu",
     "dashboard",
+    "hermes-chat",
     "hyprland-workspaces",
     "hyprsunset",
     "idle-inhibit",

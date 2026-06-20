@@ -10,6 +10,7 @@ members = [
 	"crates/lumen-core",
 	"crates/lumen-derive",
 	"crates/lumen-hyprland",
+	"crates/lumen-hermes",
 	"crates/lumen-i18n",
 	"crates/lumen-icons",
 	"crates/lumen-idle-inhibit",
@@ -87,6 +88,7 @@ reqwest = { version = "0.13", default-features = false, features = [
 	"json",
 	"query",
 	"rustls",
+	"stream",
 ] }
 rusqlite = { version = "0.38.0", features = ["bundled"] }
 rust-embed = "8"
@@ -123,6 +125,7 @@ lumen-brightness = { path = "crates/lumen-brightness" }
 lumen-cava = { path = "crates/lumen-cava", features = ["vendored"] }
 lumen-core = { path = "crates/lumen-core" }
 lumen-hyprland = { path = "crates/lumen-hyprland" }
+lumen-hermes = { path = "crates/lumen-hermes" }
 lumen-mango = { path = "crates/lumen-mango" }
 lumen-niri = { path = "crates/lumen-niri" }
 lumen-media = { path = "crates/lumen-media" }

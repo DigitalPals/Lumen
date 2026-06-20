@@ -7,6 +7,7 @@ mod compositor;
 mod cpu;
 mod custom;
 mod dashboard;
+mod hermes_chat;
 mod hyprland_workspaces;
 mod hyprsunset;
 mod idle_inhibit;
@@ -70,6 +71,7 @@ register_modules! {
     Clock => clock::Factory,
     Cpu => cpu::Factory,
     Dashboard => dashboard::Factory,
+    HermesChat => hermes_chat::Factory,
     HyprlandWorkspaces => hyprland_workspaces::Factory,
     Hyprsunset => hyprsunset::Factory,
     IdleInhibit => idle_inhibit::Factory,

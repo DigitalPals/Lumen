@@ -37,6 +37,7 @@ Modules appear inside `[[bar.layout]]` arrays. Each row links to the full refere
 | [`cpu`](/config/modules/cpu) | CPU usage, frequency, and temperature. |
 | [`custom`](/config/modules/custom) | User-defined module that runs a shell command and renders the output in the bar. |
 | [`dashboard`](/config/modules/dashboard) | Quick-access button with a distro icon; opens the dashboard dropdown. |
+| [`hermes-chat`](/config/modules/hermes-chat) | Native chat dropdown for an external Hermes Agent API server. |
 | [`hyprland-workspaces`](/config/modules/hyprland-workspaces) | Hyprland workspace indicators with click-to-switch. |
 | [`hyprsunset`](/config/modules/hyprsunset) | Toggle for Hyprland's blue-light filter. |
 | [`idle-inhibit`](/config/modules/idle-inhibit) | Toggle that prevents screen dim, lock, and suspend while active. |

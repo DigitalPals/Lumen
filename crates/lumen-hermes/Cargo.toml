@@ -1,0 +1,24 @@
+[package]
+name = "lumen-hermes"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Hermes Agent chat client and service for Lumen"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+async-stream.workspace = true
+chrono.workspace = true
+futures.workspace = true
+lumen-core.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true

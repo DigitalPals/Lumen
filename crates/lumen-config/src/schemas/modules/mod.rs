@@ -8,6 +8,7 @@ mod clock;
 mod cpu;
 mod custom;
 mod dashboard;
+mod hermes_chat;
 mod hyprland_workspaces;
 mod hyprsunset;
 mod idle_inhibit;
@@ -44,6 +45,7 @@ pub use clock::ClockConfig;
 pub use cpu::CpuConfig;
 pub use custom::{CustomModuleDefinition, ExecutionMode, RestartDelay, RestartPolicy};
 pub use dashboard::DashboardConfig;
+pub use hermes_chat::{HermesChatConfig, HermesChatLocalHistory, HermesChatTransportMode};
 pub use hyprland_workspaces::{
     ActiveIndicator, DisplayMode, HyprlandWorkspacesConfig, Numbering, UrgentMode, WorkspaceStyle,
 };
@@ -96,6 +98,9 @@ pub struct ModulesConfig {
     pub cpu: CpuConfig,
     /// Dashboard module.
     pub dashboard: DashboardConfig,
+    /// Hermes Agent chat dropdown.
+    #[serde(rename = "hermes-chat")]
+    pub hermes_chat: HermesChatConfig,
     /// Hyprland workspace switcher module.
     #[serde(rename = "hyprland-workspaces")]
     pub hyprland_workspaces: HyprlandWorkspacesConfig,

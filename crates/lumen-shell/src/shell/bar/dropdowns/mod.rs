@@ -4,6 +4,7 @@ mod bluetooth;
 mod brightness;
 mod calendar;
 mod dashboard;
+mod hermes_chat;
 mod media;
 mod model_usage;
 mod network;
@@ -48,6 +49,7 @@ register_dropdowns! {
     "brightness" => brightness::Factory,
     "calendar" => calendar::Factory,
     "dashboard" => dashboard::Factory,
+    "hermes-chat" => hermes_chat::Factory,
     "media" => media::Factory,
     "model-usage" => model_usage::Factory,
     "network" => network::Factory,

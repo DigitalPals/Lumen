@@ -47,6 +47,7 @@ lumen-ipc.workspace = true
 minijinja.workspace = true
 wildcard.workspace = true
 lumen-hyprland.workspace = true
+lumen-hermes.workspace = true
 lumen-icons.workspace = true
 lumen-idle-inhibit.workspace = true
 lumen-mango.workspace = true

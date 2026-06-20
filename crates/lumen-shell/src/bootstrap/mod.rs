@@ -1,5 +1,6 @@
 //! Application bootstrap: service initialization and instance detection.
 
+pub(crate) mod hermes_chat;
 pub(crate) mod model_usage;
 mod wallpaper;
 mod weather;
@@ -128,13 +129,16 @@ pub async fn init_services() -> Result<(StartupTimer, ShellServices), Box<dyn Er
     let bluetooth: DeferredService<BluetoothService> = DeferredService::new(None);
     let power_profiles: DeferredService<PowerProfilesService> = DeferredService::new(None);
 
-    let (weather, model_usage, core, daemons, optional) = {
+    let (weather, model_usage, hermes_chat, core, daemons, optional) = {
         let config = config_service.config();
         let weather = timer.time_sync("Weather", || {
             weather::build_weather_service(&config.modules)
         });
         let model_usage = timer.time_sync("ModelUsage", || {
             model_usage::build_model_usage_service(&config.modules)
+        });
+        let hermes_chat = timer.time_sync("HermesChat", || {
+            hermes_chat::build_hermes_chat_service(&config.modules)
         });
 
         let (core, daemons, optional) = tokio::join!(
@@ -143,7 +147,7 @@ pub async fn init_services() -> Result<(StartupTimer, ShellServices), Box<dyn Er
             init_optional_services(&timer),
         );
 
-        (weather, model_usage, core?, daemons, optional)
+        (weather, model_usage, hermes_chat, core?, daemons, optional)
     };
 
     spawn_deferred_bluetooth(bluetooth.clone());
@@ -169,6 +173,7 @@ pub async fn init_services() -> Result<(StartupTimer, ShellServices), Box<dyn Er
         power_profiles,
         idle_inhibit: core.idle_inhibit,
         mango: optional.mango,
+        hermes_chat,
         media: daemons.media,
         model_usage,
         niri: optional.niri,

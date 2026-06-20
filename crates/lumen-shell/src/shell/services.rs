@@ -6,6 +6,7 @@ use lumen_bluetooth::BluetoothService;
 use lumen_brightness::BrightnessService;
 use lumen_config::ConfigService;
 use lumen_core::DeferredService;
+use lumen_hermes::HermesChatService;
 use lumen_hyprland::HyprlandService;
 use lumen_mango::MangoService;
 use lumen_media::MediaService;
@@ -32,6 +33,7 @@ pub(crate) struct ShellServices {
     pub bluetooth: DeferredService<BluetoothService>,
     pub brightness: Option<Arc<BrightnessService>>,
     pub config: Arc<ConfigService>,
+    pub hermes_chat: Arc<HermesChatService>,
     pub hyprland: Option<Arc<HyprlandService>>,
     pub idle_inhibit: Arc<IdleInhibitService>,
     pub mango: Option<Arc<MangoService>>,
