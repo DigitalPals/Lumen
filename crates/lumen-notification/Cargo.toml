@@ -26,6 +26,7 @@ lumen-core.workspace = true
 wildcard.workspace = true
 lumen-traits.workspace = true
 zbus.workspace = true
+zvariant.workspace = true
 
 [lints]
 workspace = true

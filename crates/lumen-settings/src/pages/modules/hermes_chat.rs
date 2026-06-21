@@ -51,6 +51,7 @@ pub(crate) fn entry(config: &Config) -> LeafEntry {
                         toggle(&module.enabled),
                         text(&module.endpoint_url),
                         text(&module.api_key),
+                        text(&module.dashboard_token),
                         text(&module.model),
                         text(&module.session_key),
                     ],

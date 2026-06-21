@@ -3,7 +3,7 @@ use std::{sync::Arc, time::Duration};
 use tokio::sync::{RwLock, broadcast};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
-use zbus::{Connection, fdo::DBusProxy, names::OwnedBusName};
+use zbus::{Connection, fdo::DBusProxy, names::OwnedBusName, proxy::CacheProperties};
 
 use super::register_item;
 use crate::{events::TrayEvent, proxy::status_notifier_item::StatusNotifierItemProxy};
@@ -116,6 +116,7 @@ async fn probe_sni(connection: &Connection, bus_name: &str) -> bool {
     let probe = async {
         let proxy = StatusNotifierItemProxy::builder(connection)
             .destination(bus_name)?
+            .cache_properties(CacheProperties::No)
             .build()
             .await?;
         proxy.id().await

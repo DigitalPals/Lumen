@@ -20,6 +20,7 @@ pub(super) fn build_hermes_chat_service(modules: &ModulesConfig) -> Arc<HermesCh
                 enabled: cfg.enabled.get(),
                 endpoint_url: cfg.endpoint_url.get(),
                 api_key: secrets::resolve(Some(cfg.api_key.get())),
+                dashboard_token: secrets::resolve(Some(cfg.dashboard_token.get())),
                 model: cfg.model.get(),
                 session_key: secrets::resolve(Some(cfg.session_key.get()))
                     .filter(|value| !value.is_empty()),
@@ -40,6 +41,7 @@ pub(crate) fn connection_config(modules: &ModulesConfig) -> ConnectionConfig {
         enabled: cfg.enabled.get(),
         endpoint_url: cfg.endpoint_url.get(),
         api_key: secrets::resolve(Some(cfg.api_key.get())),
+        dashboard_token: secrets::resolve(Some(cfg.dashboard_token.get())),
         model: cfg.model.get(),
         session_key: secrets::resolve(Some(cfg.session_key.get()))
             .filter(|value| !value.is_empty()),
@@ -57,6 +59,7 @@ fn transport_mode(mode: HermesChatTransportMode) -> TransportMode {
         HermesChatTransportMode::Sessions => TransportMode::Sessions,
         HermesChatTransportMode::Runs => TransportMode::Runs,
         HermesChatTransportMode::ChatCompletions => TransportMode::ChatCompletions,
+        HermesChatTransportMode::DashboardWs => TransportMode::DashboardWs,
     }
 }
 

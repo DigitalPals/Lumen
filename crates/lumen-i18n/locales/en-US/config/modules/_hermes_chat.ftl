@@ -11,6 +11,9 @@ settings-modules-hermes-chat-endpoint-url = Endpoint URL
 settings-modules-hermes-chat-api-key = API Key
     .description = Bearer token for Hermes API server. Referencing $HERMES_API_SERVER_KEY in a .env file is recommended
 
+settings-modules-hermes-chat-dashboard-token = Dashboard Token
+    .description = Session token for Hermes Desktop dashboard WebSocket. Referencing $HERMES_DESKTOP_REMOTE_TOKEN in a .env file is recommended
+
 settings-modules-hermes-chat-model = Model
     .description = Cosmetic model name sent to OpenAI-compatible Hermes endpoints
 
@@ -22,6 +25,17 @@ settings-modules-hermes-chat-transport-mode = Transport Mode
 
 settings-modules-hermes-chat-local-history = Local History
     .description = Whether Lumen stores full transcript history locally
+
+## HermesChatTransportMode variants
+enum-hermes-chat-transport-mode-auto = Auto
+enum-hermes-chat-transport-mode-sessions = Sessions
+enum-hermes-chat-transport-mode-runs = Runs
+enum-hermes-chat-transport-mode-chat-completions = Chat Completions
+enum-hermes-chat-transport-mode-dashboard-ws = Dashboard WebSocket
+
+## HermesChatLocalHistory variants
+enum-hermes-chat-local-history-disabled = Disabled
+enum-hermes-chat-local-history-full = Full
 
 settings-modules-hermes-chat-history-limit = History Limit
     .description = Maximum number of local transcript messages to keep

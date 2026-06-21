@@ -54,6 +54,8 @@ impl DropdownInstance {
             debug!(
                 width = popover.width(),
                 height = popover.height(),
+                visible = popover.is_visible(),
+                mapped = popover.is_mapped(),
                 autohide = popover.is_autohide(),
                 classes = ?popover.css_classes(),
                 "popover mapped"
@@ -65,6 +67,8 @@ impl DropdownInstance {
             debug!(
                 width = popover.width(),
                 height = popover.height(),
+                visible = popover.is_visible(),
+                mapped = popover.is_mapped(),
                 autohide = popover.is_autohide(),
                 classes = ?popover.css_classes(),
                 "popover closed"
@@ -138,26 +142,29 @@ impl DropdownInstance {
         let widget = bar_button.widget();
         let widget_ref = widget.upcast_ref::<gtk::Widget>();
         let visible = self.popover.is_visible();
+        let mapped = self.popover.is_mapped();
         let same_parent = self.popover.parent().as_ref() == Some(widget_ref);
 
         debug!(
             visible,
+            mapped,
             same_parent,
             has_parent = self.popover.parent().is_some(),
             classes = ?self.popover.css_classes(),
             "toggle_for"
         );
 
-        if visible && same_parent {
+        if mapped && same_parent {
             self.popover.popdown();
             return;
         }
 
-        if visible {
+        if mapped {
             self.reparent_and_show(bar_button, style);
             return;
         }
 
+        self.reset_stale_closed_state();
         self.ensure_parent(widget_ref);
         self.freeze_and_show(bar_button, style);
     }
@@ -170,13 +177,37 @@ impl DropdownInstance {
         let widget_ref = widget.upcast_ref::<gtk::Widget>();
         let same_parent = self.popover.parent().as_ref() == Some(widget_ref);
 
-        if self.popover.is_visible() && same_parent {
+        if self.popover.is_mapped() && same_parent {
             self.popover.popdown();
             return;
         }
 
+        self.reset_stale_closed_state();
         self.ensure_parent(widget_ref);
         self.show_for_widget(style);
+    }
+
+    fn reset_stale_closed_state(&self) {
+        if !self.popover.is_visible() || self.popover.is_mapped() {
+            return;
+        }
+
+        debug!(
+            parent_size = ?self.popover.parent().map(|p| (p.width(), p.height())),
+            classes = ?self.popover.css_classes(),
+            "resetting stale unmapped popover before popup"
+        );
+
+        if let Some(sender) = self.thaw_target.take() {
+            sender.emit(BarButtonInput::ThawSize);
+        }
+
+        if let Some(parent) = self.popover.parent() {
+            parent.set_size_request(-1, -1);
+        }
+
+        set_bar_keyboard_mode(&self.popover, KeyboardMode::None);
+        self.popover.popdown();
     }
 
     fn show_for_widget(&self, style: DropdownStyle) {

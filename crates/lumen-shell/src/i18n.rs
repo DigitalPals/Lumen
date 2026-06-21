@@ -1,12 +1,13 @@
 //! Internationalization for lumen-shell runtime labels.
 
-use std::sync::OnceLock;
+use std::{env, sync::OnceLock};
 
 use i18n_embed::{
-    DesktopLanguageRequester, LanguageLoader,
+    LanguageLoader,
     fluent::{FluentLanguageLoader, fluent_language_loader},
 };
 use rust_embed::RustEmbed;
+use unic_langid::{LanguageIdentifier, langid};
 
 #[derive(RustEmbed)]
 #[folder = "locales/"]
@@ -22,7 +23,7 @@ pub fn loader() -> &'static FluentLanguageLoader {
             .load_fallback_language(&Localizations)
             .expect("embedded FTL resources are valid");
 
-        let requested = DesktopLanguageRequester::requested_languages();
+        let requested = requested_languages();
         let _ = i18n_embed::select(&loader, &Localizations, &requested);
 
         loader
@@ -45,3 +46,33 @@ macro_rules! td {
 }
 
 pub(crate) use td;
+
+fn requested_languages() -> Vec<LanguageIdentifier> {
+    ["LC_ALL", "LC_MESSAGES", "LANG"]
+        .into_iter()
+        .filter_map(|key| env::var(key).ok())
+        .filter_map(|value| parse_locale(&value))
+        .chain(std::iter::once(fallback_language()))
+        .collect()
+}
+
+fn parse_locale(value: &str) -> Option<LanguageIdentifier> {
+    let locale = value
+        .split('.')
+        .next()
+        .unwrap_or(value)
+        .split('@')
+        .next()
+        .unwrap_or(value)
+        .replace('_', "-");
+
+    if locale.eq_ignore_ascii_case("c") || locale.eq_ignore_ascii_case("posix") {
+        return Some(fallback_language());
+    }
+
+    locale.parse().ok()
+}
+
+fn fallback_language() -> LanguageIdentifier {
+    langid!("en-US")
+}

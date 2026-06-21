@@ -25,6 +25,11 @@ pub struct HermesChatConfig {
     #[default(String::from("$HERMES_API_SERVER_KEY"))]
     pub api_key: ConfigProperty<String>,
 
+    /// Hermes Desktop dashboard session token. `$HERMES_DESKTOP_REMOTE_TOKEN` is recommended.
+    #[serde(rename = "dashboard-token")]
+    #[default(String::from("$HERMES_DESKTOP_REMOTE_TOKEN"))]
+    pub dashboard_token: ConfigProperty<String>,
+
     /// Cosmetic model name sent to OpenAI-compatible endpoints.
     #[default(String::from("hermes-agent"))]
     pub model: ConfigProperty<String>,
@@ -171,6 +176,8 @@ pub enum HermesChatTransportMode {
     Runs,
     /// Use OpenAI-compatible chat completions.
     ChatCompletions,
+    /// Use Hermes Desktop/TUI dashboard WebSocket events.
+    DashboardWs,
 }
 
 /// Local transcript persistence policy.

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use zbus::zvariant::{OwnedValue, Type, as_value::optional};
+use zvariant::{OwnedValue, Type, as_value::optional};
 
 #[derive(Debug, Clone)]
 pub(crate) struct NotificationProps {
@@ -118,7 +118,7 @@ impl Action {
 
 #[cfg(test)]
 mod tests {
-    use zbus::zvariant::{LE, Value, serialized::Context, to_bytes};
+    use zvariant::{LE, Value, serialized::Context, to_bytes};
 
     use super::*;
 

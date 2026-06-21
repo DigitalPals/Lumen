@@ -5,6 +5,7 @@
 //! and tools execute on the remote Hermes server.
 
 mod client;
+mod dashboard;
 mod error;
 mod markdown;
 mod model;
@@ -14,10 +15,14 @@ mod store;
 
 pub use client::{HermesClient, normalize_endpoint_url};
 pub use error::{Error, Result};
-pub use markdown::{escape_pango_text, markdownish_to_pango};
+pub use markdown::{
+    MarkdownBlock, escape_pango_text, markdown_to_blocks, markdown_to_pango, markdownish_to_pango,
+};
 pub use model::{
-    ApprovalRequest, ConnectionConfig, HermesMessage, HermesRole, HermesSessionSummary,
-    HermesStatus, LocalHistoryMode, MessageStatus, ToolEvent, TransportMode,
+    ApprovalKind, ApprovalRequest, BackgroundProcessItem, BackgroundProcessStatus,
+    ConnectionConfig, HermesMessage, HermesRole, HermesSessionSummary, HermesStatus,
+    LocalHistoryMode, MessageStatus, SlashCommandSuggestion, SubagentItem, SubagentStatus,
+    TodoItem, TodoStatus, ToolEvent, TransportMode,
 };
 pub use service::{HermesChatService, HermesChatServiceBuilder};
 pub use sse::{SseDecoder, SseEvent, parse_sse_events};

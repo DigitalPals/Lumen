@@ -59,8 +59,12 @@ pub(crate) async fn subscribe(
                                 continue;
                             };
 
-                            if let Err(e) = dispatcher::dispatch(event, data, event_tx.clone()).await {
-                                warn!(error = %e, event, "cannot handle event");
+                            if let Err(error) = dispatcher::dispatch(event, data, event_tx.clone()).await {
+                                if matches!(error, Error::HyprlandEventTransmitError(_)) {
+                                    debug!(event, "dropping hyprland event with no subscribers");
+                                } else {
+                                    warn!(error = %error, event, "cannot handle event");
+                                }
                             }
                         }
                         Err(e) => {

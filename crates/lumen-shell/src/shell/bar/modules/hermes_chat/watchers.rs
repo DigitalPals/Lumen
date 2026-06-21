@@ -34,6 +34,7 @@ fn spawn_config_watcher(sender: &ComponentSender<HermesChatModule>, config: &Her
     let enabled = config.enabled.clone();
     let endpoint = config.endpoint_url.clone();
     let api_key = config.api_key.clone();
+    let dashboard_token = config.dashboard_token.clone();
     let model = config.model.clone();
     let session_key = config.session_key.clone();
     let transport_mode = config.transport_mode.clone();
@@ -48,6 +49,7 @@ fn spawn_config_watcher(sender: &ComponentSender<HermesChatModule>, config: &Her
             enabled.watch(),
             endpoint.watch(),
             api_key.watch(),
+            dashboard_token.watch(),
             model.watch(),
             session_key.watch(),
             transport_mode.watch(),

@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf, sync::RwLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{HermesMessage, Result};
+use crate::{HermesMessage, MessageStatus, Result};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct StoredHistory {
@@ -30,7 +30,8 @@ impl LocalHistoryStore {
             return Ok((None, Vec::new()));
         }
         let text = fs::read_to_string(&self.path)?;
-        let history: StoredHistory = serde_json::from_str(&text)?;
+        let mut history: StoredHistory = serde_json::from_str(&text)?;
+        history.messages = persistent_messages(&history.messages);
         if let Ok(mut guard) = self.active_session_id.write() {
             *guard = history.active_session_id.clone();
         }
@@ -54,9 +55,25 @@ impl LocalHistoryStore {
             .unwrap_or(None);
         let history = StoredHistory {
             active_session_id,
-            messages: messages.to_vec(),
+            messages: persistent_messages(messages),
         };
         fs::write(&self.path, serde_json::to_string_pretty(&history)?)?;
         Ok(())
     }
+}
+
+fn persistent_messages(messages: &[HermesMessage]) -> Vec<HermesMessage> {
+    messages
+        .iter()
+        .filter_map(|message| {
+            let mut message = message.clone();
+            if message.status == MessageStatus::Streaming {
+                if message.content.trim().is_empty() && message.tool_events.is_empty() {
+                    return None;
+                }
+                message.status = MessageStatus::Stopped;
+            }
+            Some(message)
+        })
+        .collect()
 }

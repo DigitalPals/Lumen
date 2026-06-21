@@ -17,7 +17,31 @@ monitor = "*"
 right = ["hermes-chat"]
 ```
 
-Hermes tools run on the **Hermes API server host**, not on the Lumen desktop client. Start Hermes with `API_SERVER_ENABLED=true`, set `API_SERVER_KEY=[REDACTED]`, and point `api-key` at a `$VAR_NAME` such as `$HERMES_API_SERVER_KEY`.
+Hermes tools run on the **Hermes backend host**, not on the Lumen desktop client. For API/SSE transports, start Hermes with `API_SERVER_ENABLED=true`, set `API_SERVER_KEY=[REDACTED]`, and point `api-key` at a `$VAR_NAME` such as `$HERMES_API_SERVER_KEY`. For the Desktop/TUI dashboard transport, point `dashboard-token` at `$HERMES_DESKTOP_REMOTE_TOKEN`; local loopback dashboards can also expose the token from their root page. In `auto` mode, hermes-chat tries the dashboard transport first and falls back to API/SSE compatibility probes when no dashboard is available.
+
+## Chat usage
+
+The dropdown shows recent Hermes sessions, highlights active and waiting-for-input sessions in a compact activity panel with preview text, marks the current session, and renders assistant responses with markdown, tool activity, live todo/task status, live subagent/delegated-task status, live background process status with expandable output and stop/dismiss controls, approvals, clarifications, masked sudo/secret prompts, live reasoning when Hermes provides it, and persistent backend review summaries. Running background process rows refresh periodically while the dropdown is open.
+
+In the composer, `Enter` submits the current message or accepts the highlighted slash suggestion, `Shift+Enter` inserts a newline, `Up`/`Down` select slash suggestions when the suggestion list is open and otherwise browse previous single-line prompts, and `Escape` clears the live slash-command suggestions. Choosing a bare arg-taking slash command, such as `/skin`, `/resume`, `/handoff`, `/browser`, `/personality`, or `/tools`, expands it to its argument step instead of submitting it immediately. Draft text is scoped to the active Hermes session and is restored when you switch back to that session. Normal prompts submitted while Hermes is busy are queued for the active session and drain when Hermes becomes ready again; slash commands still run immediately.
+
+Local slash commands handled by the dropdown:
+
+| Command | Description |
+|---|---|
+| `/new`, `/reset` | Start a new chat. |
+| `/branch`, `/fork` | Branch the latest user or assistant message into a new dashboard chat. |
+| `/browser [connect\|disconnect\|status] [url]` | Manage the local gateway browser CDP connection. |
+| `/handoff <platform>` | Hand off the active session to a messaging platform. |
+| `/profile [list\|name]` | List dashboard profiles or set the profile used for new dashboard chats. |
+| `/skin [list\|next\|name]` | List, cycle, or apply a Lumen theme preset. |
+| `/sessions` | Show loaded recent sessions, active work, and input waits. |
+| `/resume <id, title, or preview>`, `/switch <id, title, or preview>` | Switch to a loaded session, or open a stored dashboard session by id. |
+| `/title <name>` | Rename the current dashboard session through Hermes. |
+| `/yolo` | Toggle per-session YOLO approval bypass for the current dashboard session. |
+| `/help`, `/commands` | Show the Hermes backend command catalog when the dashboard transport is available, otherwise show local help. |
+
+With `transport-mode = "dashboard-ws"`, typing `/` shows live command suggestions from the dashboard catalog, `/resume` suggestions include loaded sessions with preview metadata, `/resume <query>` matches loaded session id, title, or preview text, and `/resume <stored-session-id>` can open id-shaped stored dashboard sessions. hermes-chat identifies dashboard requests as Hermes Desktop and creates dashboard sessions with the desktop source metadata so Hermes Agent returns the same rich markdown and event payloads used by Hermes Desktop. `/skin` argument suggestions use local Lumen theme presets, `/branch` creates a new dashboard session seeded from the latest user or assistant message, `/title <name>` renames through the dashboard `session.title` RPC, `/yolo` toggles session-scoped approval bypass through `config.set`, `/browser` manages the local gateway's browser CDP connection through `browser.manage`, `/handoff <platform>` requests and polls dashboard handoff state through `handoff.request` and `handoff.state`, `/profile <name>` validates dashboard profiles from `/api/profiles` and applies the selected profile to subsequent dashboard `session.create` calls, `/skin` applies Lumen theme presets locally, `/help` and `/commands` use the dashboard `commands.catalog` RPC, and other slash commands are executed through the Hermes dashboard gateway (`slash.exec` with `command.dispatch` fallback), so backend commands, skill commands, aliases, send directives, and prefill directives behave inline like Hermes Desktop. The fallback slash palette also lists Desktop backend commands such as `/agents`, `/background`, `/goal`, `/queue`, `/status`, `/stop`, `/tools`, `/usage`, and `/version`; `/status` and `/usage` follow Desktop semantics and render Hermes backend output inline, `/stop` stops background processes, and the dropdown Stop button cancels the active response. Prefill directives load the returned draft into the composer. Picker-owned and known no-desktop-surface commands are not sent as prompts; for example bare `/model` reports that the desktop model picker owns that action, `/reload-mcp` reports that the advanced command is not shown in the desktop palette, and `/model <name>` can still reach Hermes backend dispatch. API/SSE transports send unknown slash commands as normal prompts.
 
 ## General
 
@@ -26,6 +50,7 @@ Hermes tools run on the **Hermes API server host**, not on the Lumen desktop cli
 | `enabled` | bool | `false` | Enable the Hermes chat client module. |
 | `endpoint-url` | string | `"http://127.0.0.1:8642"` | Hermes API server base URL. `/v1` suffix is accepted and normalized. |
 | `api-key` | string | `"$HERMES_API_SERVER_KEY"` | Hermes API bearer token. `$HERMES_API_SERVER_KEY` is recommended. |
+| `dashboard-token` | string | `"$HERMES_DESKTOP_REMOTE_TOKEN"` | Hermes Desktop dashboard session token. `$HERMES_DESKTOP_REMOTE_TOKEN` is recommended. |
 | `model` | string | `"hermes-agent"` | Cosmetic model name sent to OpenAI-compatible endpoints. |
 | `session-key` | string | `""` | Optional `X-Hermes-Session-Key` used by Hermes for server-side memory scoping. |
 | `transport-mode` | [`HermesChatTransportMode`](/config/types#hermes-chat-transport-mode) | `"auto"` | Preferred API transport mode. |
@@ -73,6 +98,7 @@ Hermes tools run on the **Hermes API server host**, not on the Lumen desktop cli
 enabled = false
 endpoint-url = "http://127.0.0.1:8642"
 api-key = "$HERMES_API_SERVER_KEY"
+dashboard-token = "$HERMES_DESKTOP_REMOTE_TOKEN"
 model = "hermes-agent"
 session-key = ""
 transport-mode = "auto"

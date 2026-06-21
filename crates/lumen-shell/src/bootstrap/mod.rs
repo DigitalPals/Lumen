@@ -6,6 +6,7 @@ mod wallpaper;
 mod weather;
 
 use std::{
+    env,
     error::Error,
     fmt::Display,
     sync::Arc,
@@ -246,21 +247,43 @@ async fn init_core_services(
 }
 
 async fn init_optional_services(timer: &StartupTimer) -> OptionalServices {
-    let hyprland_task = tokio::spawn(HyprlandService::new());
-    let mango_task = tokio::spawn(MangoService::new());
-    let niri_task = tokio::spawn(NiriService::new());
+    let hyprland_task = env::var_os("HYPRLAND_INSTANCE_SIGNATURE")
+        .is_some()
+        .then(|| tokio::spawn(HyprlandService::new()));
+    let mango_task = env::var_os("MANGO_INSTANCE_SIGNATURE")
+        .is_some()
+        .then(|| tokio::spawn(MangoService::new()));
+    let niri_task = env::var_os("NIRI_SOCKET")
+        .is_some()
+        .then(|| tokio::spawn(NiriService::new()));
 
     let (hyprland, mango, niri) = tokio::join!(
-        timer.time("Hyprland", spawned(hyprland_task)),
-        timer.time("Mango", spawned(mango_task)),
-        timer.time("Niri", spawned(niri_task)),
+        optional_service(timer, "Hyprland", hyprland_task),
+        optional_service(timer, "Mango", mango_task),
+        optional_service(timer, "Niri", niri_task),
     );
 
     OptionalServices {
-        hyprland: hyprland.ok(),
-        mango: mango.ok(),
-        niri: niri.ok(),
+        hyprland,
+        mango,
+        niri,
     }
+}
+
+async fn optional_service<T, E>(
+    timer: &StartupTimer,
+    name: &'static str,
+    task: Option<JoinHandle<Result<T, E>>>,
+) -> Option<T>
+where
+    E: Display,
+{
+    let Some(task) = task else {
+        debug!(service = name, "Optional service skipped");
+        return None;
+    };
+
+    timer.time(name, spawned(task)).await.ok()
 }
 
 fn spawn_deferred_bluetooth(property: DeferredService<BluetoothService>) {
