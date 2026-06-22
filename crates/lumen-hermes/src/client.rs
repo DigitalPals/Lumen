@@ -1,4 +1,4 @@
-use std::{pin::Pin, time::Duration};
+use std::{collections::HashMap, pin::Pin, time::Duration};
 
 use async_stream::try_stream;
 use futures::{Stream, StreamExt};
@@ -7,7 +7,7 @@ use serde_json::{Value, json};
 
 use crate::{
     ConnectionConfig, Error, HermesMessage, HermesRole, HermesSessionSummary, MessageStatus,
-    Result, SseDecoder, SseEvent,
+    Result, SseDecoder, SseEvent, ToolEvent,
 };
 
 /// Stream type used for decoded SSE events.
@@ -476,37 +476,54 @@ fn parse_unix_timestamp(value: Option<&Value>) -> Option<chrono::DateTime<chrono
 }
 
 pub(crate) fn parse_messages(value: &Value) -> Vec<HermesMessage> {
-    let array = value
+    let Some(array) = value
         .get("messages")
         .or_else(|| value.get("data"))
         .and_then(Value::as_array)
-        .or_else(|| value.as_array());
-    array
-        .into_iter()
-        .flatten()
-        .enumerate()
-        .filter_map(|(index, item)| parse_message(index, item))
-        .collect()
+        .or_else(|| value.as_array())
+    else {
+        return Vec::new();
+    };
+
+    let mut messages = Vec::new();
+    let mut tool_targets = HashMap::new();
+    let mut last_assistant_index = None;
+
+    for (index, item) in array.iter().enumerate() {
+        if message_role(item) == HermesRole::Tool {
+            if let Some(event) = tool_row_event(index, item) {
+                attach_tool_event(
+                    &mut messages,
+                    &mut tool_targets,
+                    last_assistant_index,
+                    index,
+                    event,
+                );
+            }
+            continue;
+        }
+
+        let Some(mut message) = parse_message(index, item) else {
+            continue;
+        };
+        if message.role == HermesRole::Assistant {
+            let message_index = messages.len();
+            for event in tool_call_events(item) {
+                tool_targets.insert(event.id.clone(), message_index);
+                message.tool_events.push(event);
+            }
+            last_assistant_index = Some(message_index);
+        }
+        messages.push(message);
+    }
+
+    messages
 }
 
 fn parse_message(index: usize, value: &Value) -> Option<HermesMessage> {
     let content = message_text(value);
-    let role = match value
-        .get("role")
-        .and_then(Value::as_str)
-        .unwrap_or("assistant")
-    {
-        "user" => HermesRole::User,
-        "system" => HermesRole::System,
-        "tool" => HermesRole::Tool,
-        "error" => HermesRole::Error,
-        _ => HermesRole::Assistant,
-    };
-    let id = value
-        .get("id")
-        .and_then(Value::as_str)
-        .map(str::to_owned)
-        .unwrap_or_else(|| format!("remote-{index}"));
+    let role = message_role(value);
+    let id = string_field(value, &["id"]).unwrap_or_else(|| format!("remote-{index}"));
     let mut message = HermesMessage::new(id, role, content);
     message.reasoning = value
         .get("reasoning")
@@ -517,6 +534,20 @@ fn parse_message(index: usize, value: &Value) -> Option<HermesMessage> {
         .to_owned();
     message.status = MessageStatus::Complete;
     Some(message)
+}
+
+fn message_role(value: &Value) -> HermesRole {
+    match value
+        .get("role")
+        .and_then(Value::as_str)
+        .unwrap_or("assistant")
+    {
+        "user" => HermesRole::User,
+        "system" => HermesRole::System,
+        "tool" => HermesRole::Tool,
+        "error" => HermesRole::Error,
+        _ => HermesRole::Assistant,
+    }
 }
 
 fn message_text(value: &Value) -> String {
@@ -550,6 +581,304 @@ fn content_text(value: &Value) -> Option<String> {
     }
 
     None
+}
+
+fn tool_call_events(value: &Value) -> Vec<ToolEvent> {
+    value
+        .get("tool_calls")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(tool_call_event)
+        .collect()
+}
+
+fn tool_call_event(value: &Value) -> Option<ToolEvent> {
+    let id = string_field(
+        value,
+        &[
+            "id",
+            "call_id",
+            "tool_call_id",
+            "toolCallId",
+            "tool_use_id",
+            "toolUseId",
+        ],
+    )?;
+    let function = value.get("function");
+    let tool = function
+        .and_then(|function| string_field(function, &["name", "tool_name", "toolName"]))
+        .or_else(|| string_field(value, &["name", "tool_name", "toolName", "function"]))
+        .unwrap_or_else(|| String::from("tool"));
+    let arguments = function
+        .and_then(|function| function.get("arguments"))
+        .or_else(|| value.get("arguments"))
+        .or_else(|| value.get("args"))
+        .and_then(argument_value);
+    let command = arguments
+        .as_ref()
+        .and_then(|args| string_field(args, &["command"]));
+    let path = arguments
+        .as_ref()
+        .and_then(|args| string_field(args, &["path", "file", "file_path", "target_path"]));
+    let url = arguments
+        .as_ref()
+        .and_then(|args| string_field(args, &["url", "href"]));
+    let input = arguments
+        .as_ref()
+        .and_then(|args| string_field(args, &["input", "query", "pattern", "preview"]));
+    let label = command
+        .clone()
+        .or_else(|| input.clone())
+        .or_else(|| path.clone())
+        .or_else(|| url.clone())
+        .unwrap_or_else(|| tool.clone());
+
+    Some(ToolEvent {
+        id,
+        tool,
+        label,
+        status: String::from("completed"),
+        command,
+        input,
+        output: None,
+        error: None,
+        path,
+        url,
+        has_inline_diff: false,
+        raw: compact_json(value),
+    })
+}
+
+fn tool_row_event(index: usize, value: &Value) -> Option<ToolEvent> {
+    let content = value.get("content");
+    let payload = content.and_then(tool_payload_value);
+    let id = string_field(
+        value,
+        &[
+            "tool_call_id",
+            "toolCallId",
+            "tool_use_id",
+            "toolUseId",
+            "call_id",
+            "id",
+        ],
+    )
+    .unwrap_or_else(|| format!("tool-row-{index}"));
+    let tool = string_field(value, &["tool_name", "toolName", "name", "tool"])
+        .or_else(|| {
+            payload.as_ref().and_then(|payload| {
+                string_field(
+                    payload,
+                    &["tool", "tool_name", "toolName", "name", "function"],
+                )
+            })
+        })
+        .unwrap_or_else(|| String::from("tool"));
+    let command = payload
+        .as_ref()
+        .and_then(|payload| string_field(payload, &["command"]));
+    let path = payload
+        .as_ref()
+        .and_then(|payload| string_field(payload, &["path", "file", "file_path", "target_path"]));
+    let url = payload
+        .as_ref()
+        .and_then(|payload| string_field(payload, &["url", "href"]));
+    let input = payload
+        .as_ref()
+        .and_then(|payload| string_field(payload, &["input", "query", "pattern", "preview"]));
+    let output = payload
+        .as_ref()
+        .and_then(tool_output)
+        .or_else(|| content.and_then(non_json_text));
+    let error = payload
+        .as_ref()
+        .and_then(|payload| string_field(payload, &["error", "message", "description"]));
+    let label = command
+        .clone()
+        .or_else(|| input.clone())
+        .or_else(|| path.clone())
+        .or_else(|| url.clone())
+        .or_else(|| output.as_ref().map(|text| summarize_text(text, 96)))
+        .unwrap_or_else(|| tool.clone());
+
+    Some(ToolEvent {
+        id,
+        tool,
+        label,
+        status: if error.is_some() {
+            String::from("failed")
+        } else {
+            String::from("completed")
+        },
+        command,
+        input,
+        output,
+        error,
+        path,
+        url,
+        has_inline_diff: payload
+            .as_ref()
+            .and_then(|payload| payload.get("inline_diff"))
+            .and_then(Value::as_str)
+            .is_some_and(|diff| !diff.trim().is_empty()),
+        raw: payload
+            .as_ref()
+            .and_then(compact_json)
+            .or_else(|| content.and_then(compact_json)),
+    })
+}
+
+fn attach_tool_event(
+    messages: &mut Vec<HermesMessage>,
+    tool_targets: &mut HashMap<String, usize>,
+    last_assistant_index: Option<usize>,
+    index: usize,
+    event: ToolEvent,
+) {
+    let target_index = tool_targets
+        .get(&event.id)
+        .copied()
+        .or(last_assistant_index);
+    if let Some(target_index) = target_index
+        && let Some(message) = messages.get_mut(target_index)
+    {
+        upsert_tool_event(message, event);
+        return;
+    }
+
+    let mut message = HermesMessage::new(
+        format!("remote-tool-activity-{index}"),
+        HermesRole::Assistant,
+        String::new(),
+    );
+    tool_targets.insert(event.id.clone(), messages.len());
+    message.tool_events.push(event);
+    messages.push(message);
+}
+
+fn upsert_tool_event(message: &mut HermesMessage, event: ToolEvent) {
+    if let Some(existing) = message
+        .tool_events
+        .iter_mut()
+        .find(|existing| existing.id == event.id)
+    {
+        merge_tool_event(existing, event);
+    } else {
+        message.tool_events.push(event);
+    }
+}
+
+fn merge_tool_event(existing: &mut ToolEvent, event: ToolEvent) {
+    let event_label_is_specific = !event.label.trim().is_empty() && event.label != event.tool;
+    if existing.tool == "tool" || event.tool != "tool" {
+        existing.tool = event.tool;
+    }
+    if existing.label.trim().is_empty()
+        || existing.label == existing.tool
+        || event_label_is_specific
+    {
+        existing.label = event.label;
+    }
+    existing.status = event.status;
+    existing.command = event.command.or_else(|| existing.command.clone());
+    existing.input = event.input.or_else(|| existing.input.clone());
+    existing.output = event.output.or_else(|| existing.output.clone());
+    existing.error = event.error.or_else(|| existing.error.clone());
+    existing.path = event.path.or_else(|| existing.path.clone());
+    existing.url = event.url.or_else(|| existing.url.clone());
+    existing.has_inline_diff |= event.has_inline_diff;
+    existing.raw = event.raw.or_else(|| existing.raw.clone());
+}
+
+fn argument_value(value: &Value) -> Option<Value> {
+    if let Some(text) = value.as_str() {
+        let trimmed = text.trim();
+        if trimmed.is_empty() {
+            return None;
+        }
+        return serde_json::from_str(trimmed)
+            .ok()
+            .or_else(|| Some(Value::String(text.to_owned())));
+    }
+    Some(value.clone())
+}
+
+fn tool_payload_value(value: &Value) -> Option<Value> {
+    if let Some(text) = value.as_str() {
+        let trimmed = text.trim();
+        if trimmed.is_empty() {
+            return None;
+        }
+        if trimmed.starts_with('{') || trimmed.starts_with('[') {
+            serde_json::from_str(trimmed).ok()
+        } else {
+            Some(Value::String(text.to_owned()))
+        }
+    } else {
+        Some(value.clone())
+    }
+}
+
+fn tool_output(value: &Value) -> Option<String> {
+    string_field(
+        value,
+        &[
+            "output",
+            "output_tail",
+            "content",
+            "result",
+            "stdout",
+            "stderr",
+            "summary",
+            "matches_text",
+        ],
+    )
+    .or_else(|| {
+        if value.is_array() {
+            compact_json(value)
+        } else {
+            None
+        }
+    })
+}
+
+fn non_json_text(value: &Value) -> Option<String> {
+    let text = value.as_str()?.trim();
+    if text.starts_with('{') || text.starts_with('[') || text.is_empty() {
+        None
+    } else {
+        Some(value.as_str()?.to_owned())
+    }
+}
+
+fn string_field(value: &Value, keys: &[&str]) -> Option<String> {
+    keys.iter().find_map(|key| scalar_text(value.get(*key)?))
+}
+
+fn scalar_text(value: &Value) -> Option<String> {
+    if let Some(text) = value.as_str().filter(|text| !text.trim().is_empty()) {
+        Some(text.to_owned())
+    } else if value.is_number() || value.is_boolean() {
+        Some(value.to_string())
+    } else {
+        None
+    }
+}
+
+fn compact_json(value: &Value) -> Option<String> {
+    if value.is_null() {
+        return None;
+    }
+    Some(summarize_text(&value.to_string(), 2_000))
+}
+
+fn summarize_text(text: &str, max_chars: usize) -> String {
+    if text.chars().count() > max_chars {
+        format!("{}...", text.chars().take(max_chars).collect::<String>())
+    } else {
+        text.to_owned()
+    }
 }
 
 #[cfg(test)]
@@ -658,6 +987,56 @@ mod tests {
         assert_eq!(messages.len(), 1);
         assert_eq!(messages[0].content, "hello world");
         assert_eq!(messages[0].reasoning, "because");
+    }
+
+    #[test]
+    fn parse_messages_reconstructs_tool_rows_as_assistant_tool_activity() {
+        let messages = parse_messages(&json!({
+            "messages": [
+                {"id": "u1", "role": "user", "content": "read this file"},
+                {
+                    "id": "a1",
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": [
+                        {
+                            "id": "call_1",
+                            "type": "function",
+                            "function": {
+                                "name": "read_file",
+                                "arguments": "{\"path\":\"/tmp/example.txt\"}"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "t1",
+                    "role": "tool",
+                    "tool_call_id": "call_1",
+                    "tool_name": "read_file",
+                    "content": "{\"content\":\"1|hello\\n\",\"total_lines\":1}"
+                },
+                {"id": "a2", "role": "assistant", "content": "Done."}
+            ]
+        }));
+
+        assert_eq!(messages.len(), 3);
+        assert_eq!(messages[0].role, HermesRole::User);
+        assert_eq!(messages[1].role, HermesRole::Assistant);
+        assert!(messages[1].content.is_empty());
+        assert_eq!(messages[1].tool_events.len(), 1);
+        assert_eq!(messages[1].tool_events[0].id, "call_1");
+        assert_eq!(messages[1].tool_events[0].tool, "read_file");
+        assert_eq!(messages[1].tool_events[0].status, "completed");
+        assert_eq!(
+            messages[1].tool_events[0].path.as_deref(),
+            Some("/tmp/example.txt")
+        );
+        assert_eq!(
+            messages[1].tool_events[0].output.as_deref(),
+            Some("1|hello\n")
+        );
+        assert_eq!(messages[2].content, "Done.");
     }
 
     #[test]
