@@ -19,7 +19,7 @@ pub use markdown::{
     MarkdownBlock, escape_pango_text, markdown_to_blocks, markdown_to_pango, markdownish_to_pango,
 };
 pub use model::{
-    ApprovalKind, ApprovalRequest, BackgroundProcessItem, BackgroundProcessStatus,
+    ApprovalKind, ApprovalRequest, BackgroundProcessItem, BackgroundProcessStatus, ChatAttachment,
     ConnectionConfig, HermesMessage, HermesRole, HermesSessionSummary, HermesStatus,
     LocalHistoryMode, MessageStatus, SlashCommandSuggestion, SubagentItem, SubagentStatus,
     TodoItem, TodoStatus, ToolEvent, TransportMode,

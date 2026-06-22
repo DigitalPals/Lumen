@@ -6,8 +6,8 @@ use reqwest::{Client, Method, header};
 use serde_json::{Value, json};
 
 use crate::{
-    ConnectionConfig, Error, HermesMessage, HermesRole, HermesSessionSummary, MessageStatus,
-    Result, SseDecoder, SseEvent, ToolEvent,
+    ChatAttachment, ConnectionConfig, Error, HermesMessage, HermesRole, HermesSessionSummary,
+    MessageStatus, Result, SseDecoder, SseEvent, ToolEvent,
 };
 
 /// Stream type used for decoded SSE events.
@@ -145,7 +145,25 @@ impl HermesClient {
         session_id: &str,
         content: &str,
     ) -> Result<EventStream> {
-        let body = json!({"message": content, "content": content, "stream": true});
+        self.stream_session_chat_with_attachments(session_id, content, &[])
+            .await
+    }
+
+    /// Opens a native session chat SSE stream with inline attachments.
+    ///
+    /// # Errors
+    /// Returns an error if the request cannot be started.
+    pub async fn stream_session_chat_with_attachments(
+        &self,
+        session_id: &str,
+        content: &str,
+        attachments: &[ChatAttachment],
+    ) -> Result<EventStream> {
+        let body = json!({
+            "message": content,
+            "content": chat_content_value(content, attachments),
+            "stream": true,
+        });
         self.post_sse(&format!("/api/sessions/{session_id}/chat/stream"), &body)
             .await
     }
@@ -165,7 +183,21 @@ impl HermesClient {
     /// # Errors
     /// Returns an error if the request cannot be started.
     pub async fn stream_chat_completions(&self, messages: &[HermesMessage]) -> Result<EventStream> {
-        let api_messages = chat_completion_messages(messages);
+        self.stream_chat_completions_with_attachments(messages, &[])
+            .await
+    }
+
+    /// Opens an OpenAI-compatible chat completion SSE stream with inline attachments
+    /// on the latest user message.
+    ///
+    /// # Errors
+    /// Returns an error if the request cannot be started.
+    pub async fn stream_chat_completions_with_attachments(
+        &self,
+        messages: &[HermesMessage],
+        attachments: &[ChatAttachment],
+    ) -> Result<EventStream> {
+        let api_messages = chat_completion_messages(messages, attachments);
         let body = json!({"model": self.config.model, "messages": api_messages, "stream": true});
         self.post_sse("/v1/chat/completions", &body).await
     }
@@ -175,7 +207,7 @@ impl HermesClient {
     /// # Errors
     /// Returns an error if the request fails.
     pub async fn chat_completions(&self, messages: &[HermesMessage]) -> Result<Value> {
-        let api_messages = chat_completion_messages(messages);
+        let api_messages = chat_completion_messages(messages, &[]);
         let body = json!({"model": self.config.model, "messages": api_messages, "stream": false});
         self.post_json("/v1/chat/completions", &body).await
     }
@@ -316,16 +348,28 @@ fn approval_body(approved: bool, text: Option<&str>, approval_id: Option<&str>) 
     body
 }
 
-fn chat_completion_messages(messages: &[HermesMessage]) -> Vec<Value> {
+fn chat_completion_messages(
+    messages: &[HermesMessage],
+    attachments: &[ChatAttachment],
+) -> Vec<Value> {
+    let latest_user_index = messages
+        .iter()
+        .rposition(|message| message.role == HermesRole::User);
     messages
         .iter()
-        .filter(|message| {
+        .enumerate()
+        .filter(|(_, message)| {
             matches!(
                 message.role,
                 HermesRole::User | HermesRole::Assistant | HermesRole::System
             ) && !message.content.trim().is_empty()
         })
-        .map(|message| {
+        .map(|(index, message)| {
+            let content = if Some(index) == latest_user_index {
+                chat_content_value(&message.content, attachments)
+            } else {
+                json!(message.content)
+            };
             json!({
                 "role": match message.role {
                     HermesRole::User => "user",
@@ -333,10 +377,50 @@ fn chat_completion_messages(messages: &[HermesMessage]) -> Vec<Value> {
                     HermesRole::System => "system",
                     HermesRole::Tool | HermesRole::Error => "system",
                 },
-                "content": message.content,
+                "content": content,
             })
         })
         .collect()
+}
+
+fn chat_content_value(content: &str, attachments: &[ChatAttachment]) -> Value {
+    if attachments.is_empty() {
+        return json!(content);
+    }
+
+    let text = content_with_text_attachments(content, attachments);
+    let mut parts = vec![json!({"type": "text", "text": text})];
+    for attachment in attachments
+        .iter()
+        .filter(|attachment| attachment.image_url.is_some())
+    {
+        if let Some(image_url) = &attachment.image_url {
+            parts.push(json!({
+                "type": "image_url",
+                "image_url": {"url": image_url},
+            }));
+        }
+    }
+    json!(parts)
+}
+
+fn content_with_text_attachments(content: &str, attachments: &[ChatAttachment]) -> String {
+    let mut text = content.to_owned();
+    for attachment in attachments
+        .iter()
+        .filter(|attachment| attachment.text.is_some())
+    {
+        if let Some(body) = &attachment.text {
+            text.push_str("\n\nAttached document: ");
+            text.push_str(&attachment.name);
+            text.push_str(" (");
+            text.push_str(&attachment.mime_type);
+            text.push_str(")\n```\n");
+            text.push_str(body);
+            text.push_str("\n```");
+        }
+    }
+    text
 }
 
 /// Normalizes a Hermes endpoint to scheme/host/base path without a trailing `/v1`.
@@ -1065,7 +1149,7 @@ mod tests {
         let assistant = HermesMessage::new("a2", HermesRole::Assistant, "hi");
 
         assert_eq!(
-            chat_completion_messages(&[user, placeholder, tool, error, assistant]),
+            chat_completion_messages(&[user, placeholder, tool, error, assistant], &[]),
             vec![
                 json!({"role": "user", "content": "hello"}),
                 json!({"role": "assistant", "content": "hi"}),

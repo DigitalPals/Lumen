@@ -325,6 +325,43 @@ pub struct SlashCommandSuggestion {
     pub group: String,
 }
 
+/// User-provided attachment sent with a chat turn.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ChatAttachment {
+    /// Display/file name shown to the model.
+    pub name: String,
+    /// Best-effort MIME type for the attachment.
+    pub mime_type: String,
+    /// Inline image URL (`data:image/...` or remote URL) for multimodal transports.
+    pub image_url: Option<String>,
+    /// Text extracted from a document attachment.
+    pub text: Option<String>,
+}
+
+impl ChatAttachment {
+    /// Creates an inline image attachment.
+    #[must_use]
+    pub fn image(name: String, mime_type: String, image_url: String) -> Self {
+        Self {
+            name,
+            mime_type,
+            image_url: Some(image_url),
+            text: None,
+        }
+    }
+
+    /// Creates a text document attachment.
+    #[must_use]
+    pub fn text(name: String, mime_type: String, text: String) -> Self {
+        Self {
+            name,
+            mime_type,
+            image_url: None,
+            text: Some(text),
+        }
+    }
+}
+
 /// Chat message shown by the dropdown.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HermesMessage {

@@ -16,7 +16,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::{debug, warn};
 
 use crate::{
-    ApprovalKind, ApprovalRequest, BackgroundProcessItem, BackgroundProcessStatus,
+    ApprovalKind, ApprovalRequest, BackgroundProcessItem, BackgroundProcessStatus, ChatAttachment,
     ConnectionConfig, Error, HermesClient, HermesMessage, HermesRole, HermesSessionSummary,
     HermesStatus, LocalHistoryMode, MessageStatus, Result, SlashCommandSuggestion, SseEvent,
     SubagentItem, SubagentStatus, TodoItem, TodoStatus, ToolEvent, TransportMode,
@@ -546,6 +546,11 @@ impl HermesChatService {
     /// Sends a message and waits for the completed answer.
     #[allow(clippy::too_many_lines)]
     pub fn send_message(&self, content: String) {
+        self.send_message_with_attachments(content, Vec::new());
+    }
+
+    /// Sends a message with optional image/text attachments.
+    pub fn send_message_with_attachments(&self, content: String, attachments: Vec<ChatAttachment>) {
         let content = content.trim().to_owned();
         if content.is_empty() {
             return;
@@ -580,6 +585,7 @@ impl HermesChatService {
         self.messages.set(current.clone());
         self.persist(&config, &current);
 
+        let attachments = attachments.clone();
         let status = self.status.clone();
         let messages_prop = self.messages.clone();
         let active_prop = self.active_session_id.clone();
@@ -601,6 +607,7 @@ impl HermesChatService {
             let result = stream_message(StreamContext {
                 config: config.clone(),
                 content,
+                attachments,
                 stream_id,
                 assistant_id: assistant_id.clone(),
                 token: token.clone(),
@@ -2729,6 +2736,7 @@ async fn connect_chat_completions_inner(
 struct StreamContext {
     config: ConnectionConfig,
     content: String,
+    attachments: Vec<ChatAttachment>,
     stream_id: u64,
     assistant_id: String,
     token: CancellationToken,
@@ -3000,7 +3008,7 @@ async fn stream_dashboard_message(ctx: StreamContext) -> Result<()> {
     let submit_id = connection
         .send_request(
             "prompt.submit",
-            json!({"session_id": session_id, "text": ctx.content}),
+            dashboard_prompt_submit_body(&session_id, &ctx.content, &ctx.attachments),
         )
         .await?;
     let answer_buffer = Property::new(Vec::new());
@@ -3055,6 +3063,63 @@ async fn stream_dashboard_message(ctx: StreamContext) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn dashboard_prompt_submit_body(
+    session_id: &str,
+    content: &str,
+    attachments: &[ChatAttachment],
+) -> Value {
+    if attachments.is_empty() {
+        return json!({"session_id": session_id, "text": content});
+    }
+
+    json!({
+        "session_id": session_id,
+        "text": content,
+        "content": chat_content_value(content, attachments),
+        "attachments": attachments,
+    })
+}
+
+fn chat_content_value(content: &str, attachments: &[ChatAttachment]) -> Value {
+    if attachments.is_empty() {
+        return json!(content);
+    }
+
+    let text = content_with_text_attachments(content, attachments);
+    let mut parts = vec![json!({"type": "text", "text": text})];
+    for attachment in attachments
+        .iter()
+        .filter(|attachment| attachment.image_url.is_some())
+    {
+        if let Some(image_url) = &attachment.image_url {
+            parts.push(json!({
+                "type": "image_url",
+                "image_url": {"url": image_url},
+            }));
+        }
+    }
+    json!(parts)
+}
+
+fn content_with_text_attachments(content: &str, attachments: &[ChatAttachment]) -> String {
+    let mut text = content.to_owned();
+    for attachment in attachments
+        .iter()
+        .filter(|attachment| attachment.text.is_some())
+    {
+        if let Some(body) = &attachment.text {
+            text.push_str("\n\nAttached document: ");
+            text.push_str(&attachment.name);
+            text.push_str(" (");
+            text.push_str(&attachment.mime_type);
+            text.push_str(")\n```\n");
+            text.push_str(body);
+            text.push_str("\n```");
+        }
+    }
+    text
 }
 
 async fn run_dashboard_slash_command(ctx: SlashContext) -> Result<()> {
@@ -3784,21 +3849,21 @@ async fn open_message_stream(
 
     if matches!(ctx.config.transport_mode, TransportMode::ChatCompletions) {
         return client
-            .stream_chat_completions(&ctx.messages.get())
+            .stream_chat_completions_with_attachments(&ctx.messages.get(), &ctx.attachments)
             .await
             .map(Some);
     }
 
     if let Some(session_id) = session_id {
         return client
-            .stream_session_chat(session_id, &ctx.content)
+            .stream_session_chat_with_attachments(session_id, &ctx.content, &ctx.attachments)
             .await
             .map(Some);
     }
 
     if matches!(ctx.config.transport_mode, TransportMode::Auto) {
         client
-            .stream_chat_completions(&ctx.messages.get())
+            .stream_chat_completions_with_attachments(&ctx.messages.get(), &ctx.attachments)
             .await
             .map(Some)
     } else {

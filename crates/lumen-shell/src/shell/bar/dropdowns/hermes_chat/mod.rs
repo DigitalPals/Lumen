@@ -2,8 +2,16 @@
 
 mod factory;
 
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{
+    collections::HashMap,
+    env, fs, io,
+    path::{Path, PathBuf},
+    process::{Child, Command, Stdio},
+    sync::Arc,
+    time::Duration,
+};
 
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64_STANDARD};
 use gtk::prelude::*;
 use lumen_config::{
     ConfigService,
@@ -11,7 +19,7 @@ use lumen_config::{
     schemas::styling::{HexColor, PaletteConfig, StylingConfig, ThemeProvider},
 };
 use lumen_hermes::{
-    ApprovalKind, ApprovalRequest, BackgroundProcessItem, BackgroundProcessStatus,
+    ApprovalKind, ApprovalRequest, BackgroundProcessItem, BackgroundProcessStatus, ChatAttachment,
     HermesChatService, HermesMessage, HermesRole, HermesSessionSummary, HermesStatus,
     MarkdownBlock, MessageStatus, SlashCommandSuggestion, SubagentItem, SubagentStatus, TodoItem,
     TodoStatus, ToolEvent, escape_pango_text, markdown_to_blocks, markdown_to_pango,
@@ -55,7 +63,10 @@ pub(crate) struct HermesChatDropdown {
     history_cursor: Option<usize>,
     history_draft: String,
     last_error: Option<String>,
+    pending_attachments: Vec<ChatAttachment>,
     recording: bool,
+    recording_process: Option<Child>,
+    recording_path: Option<PathBuf>,
     ui: HermesChatUi,
 }
 
@@ -74,6 +85,7 @@ pub(crate) struct HermesChatUi {
     scroller: gtk::ScrolledWindow,
     composer: gtk::TextView,
     slash_box: gtk::Box,
+    attachment_box: gtk::Box,
     mic_button: gtk::Button,
     send: gtk::Button,
     stop: gtk::Button,
@@ -92,6 +104,7 @@ pub(crate) struct HermesChatUi {
 struct QueuedPrompt {
     id: String,
     text: String,
+    attachments: Vec<ChatAttachment>,
 }
 
 #[derive(Debug)]
@@ -103,6 +116,9 @@ pub(crate) enum HermesChatDropdownMsg {
     SelectSession(String),
     ToggleMic,
     AttachClicked,
+    FileSelected(String),
+    RemoveAttachment(usize),
+    VoiceTranscribed(std::result::Result<String, String>),
     Approve,
     Reject,
     Opened(bool),
@@ -388,9 +404,14 @@ impl Component for HermesChatDropdown {
         stop.connect_clicked(move |_| stop_sender.emit(HermesChatDropdownMsg::Stop));
         composer_box.append(&stop);
 
+        let attachment_box = gtk::Box::new(gtk::Orientation::Horizontal, 6);
+        attachment_box.add_css_class("hc-attachments");
+        attachment_box.set_visible(false);
+
         let composer_outer = gtk::Box::new(gtk::Orientation::Vertical, 0);
         composer_outer.set_css_classes(&["dropdown-footer", "hc-composer-wrap"]);
         composer_outer.append(&slash_box);
+        composer_outer.append(&attachment_box);
         composer_outer.append(&composer_box);
         outer.append(&composer_outer);
 
@@ -501,7 +522,10 @@ impl Component for HermesChatDropdown {
             history_cursor: None,
             history_draft: String::new(),
             last_error: None,
+            pending_attachments: Vec::new(),
             recording: false,
+            recording_process: None,
+            recording_path: None,
             ui: HermesChatUi {
                 title,
                 status,
@@ -516,6 +540,7 @@ impl Component for HermesChatDropdown {
                 scroller,
                 composer,
                 slash_box,
+                attachment_box,
                 mic_button,
                 send,
                 stop,
@@ -535,7 +560,7 @@ impl Component for HermesChatDropdown {
         ComponentParts { model, widgets: () }
     }
 
-    fn update(&mut self, msg: Self::Input, _sender: ComponentSender<Self>, _root: &Self::Root) {
+    fn update(&mut self, msg: Self::Input, sender: ComponentSender<Self>, _root: &Self::Root) {
         match msg {
             HermesChatDropdownMsg::Send => self.submit_composer(),
             HermesChatDropdownMsg::SubmitOrAcceptSuggestion => {
@@ -566,14 +591,17 @@ impl Component for HermesChatDropdown {
                     self.hermes_chat.select_session(session_id);
                 }
             }
-            HermesChatDropdownMsg::ToggleMic => {
-                self.recording = !self.recording;
-                self.render_composer_controls(&self.ui);
+            HermesChatDropdownMsg::ToggleMic => self.toggle_voice_input(&sender),
+            HermesChatDropdownMsg::AttachClicked => self.open_attachment_picker(&sender),
+            HermesChatDropdownMsg::FileSelected(path) => self.add_attachment(path),
+            HermesChatDropdownMsg::RemoveAttachment(index) => {
+                if index < self.pending_attachments.len() {
+                    self.pending_attachments.remove(index);
+                    self.render_attachments(&self.ui);
+                }
             }
-            HermesChatDropdownMsg::AttachClicked => {
-                self.hermes_chat.append_system_notice(String::from(
-                    "Attachments aren't supported yet in the desktop Hermes chat.",
-                ));
+            HermesChatDropdownMsg::VoiceTranscribed(result) => {
+                self.finish_voice_transcription(result)
             }
             HermesChatDropdownMsg::Approve => {
                 if self
@@ -672,9 +700,15 @@ impl HermesChatDropdown {
     fn submit_composer(&mut self) {
         let buffer = self.ui.composer.buffer();
         let text = composer_text(&self.ui.composer);
-        if text.trim().is_empty() {
+        let attachments = self.pending_attachments.clone();
+        if text.trim().is_empty() && attachments.is_empty() {
             return;
         }
+        let text = if text.trim().is_empty() {
+            String::from("Please inspect the attached file.")
+        } else {
+            text
+        };
         let is_slash = text.trim().starts_with('/');
         let handled = if self
             .approval
@@ -690,12 +724,15 @@ impl HermesChatDropdown {
             if is_slash {
                 self.hermes_chat.send_slash_command(text);
             } else if matches!(self.status, HermesStatus::Busy) {
-                self.enqueue_prompt(text);
+                self.enqueue_prompt(text, attachments);
             } else {
-                self.hermes_chat.send_message(text);
+                self.hermes_chat
+                    .send_message_with_attachments(text, attachments);
             }
         }
         buffer.set_text("");
+        self.pending_attachments.clear();
+        self.render_attachments(&self.ui);
         self.clear_current_composer_draft();
         self.reset_history_browse();
     }
@@ -703,6 +740,104 @@ impl HermesChatDropdown {
     fn reset_history_browse(&mut self) {
         self.history_cursor = None;
         self.history_draft.clear();
+    }
+
+    fn open_attachment_picker(&self, sender: &ComponentSender<Self>) {
+        let dialog = gtk::FileDialog::new();
+        let input_sender = sender.input_sender().clone();
+        let root = self.ui.composer.root();
+        let window = root
+            .as_ref()
+            .and_then(|root| root.downcast_ref::<gtk::Window>());
+        dialog.open(window, gtk::gio::Cancellable::NONE, move |result| {
+            if let Ok(file) = result
+                && let Some(path) = file.path()
+            {
+                let _ = input_sender.send(HermesChatDropdownMsg::FileSelected(
+                    path.to_string_lossy().into_owned(),
+                ));
+            }
+        });
+    }
+
+    fn add_attachment(&mut self, path: String) {
+        match attachment_from_path(Path::new(&path)) {
+            Ok(attachment) => {
+                self.pending_attachments.push(attachment);
+                self.render_attachments(&self.ui);
+            }
+            Err(message) => self.hermes_chat.append_system_notice(message),
+        }
+    }
+
+    fn toggle_voice_input(&mut self, sender: &ComponentSender<Self>) {
+        if self.recording {
+            self.stop_voice_input(sender);
+        } else {
+            self.start_voice_input();
+        }
+    }
+
+    fn start_voice_input(&mut self) {
+        let path = voice_recording_path();
+        match start_audio_recorder(&path) {
+            Ok(child) => {
+                self.recording = true;
+                self.recording_path = Some(path);
+                self.recording_process = Some(child);
+                self.render_composer_controls(&self.ui);
+                self.hermes_chat.append_system_notice(
+                    "Recording voice input. Click the microphone again to stop.".to_owned(),
+                );
+            }
+            Err(err) => self.hermes_chat.append_system_notice(format!(
+                "Could not start voice input: {err}. Install pw-record, parecord, or arecord."
+            )),
+        }
+    }
+
+    fn stop_voice_input(&mut self, sender: &ComponentSender<Self>) {
+        self.recording = false;
+        self.render_composer_controls(&self.ui);
+        let Some(mut child) = self.recording_process.take() else {
+            return;
+        };
+        stop_audio_recorder(&mut child);
+        let Some(path) = self.recording_path.take() else {
+            return;
+        };
+        let input_sender = sender.input_sender().clone();
+        self.hermes_chat
+            .append_system_notice("Transcribing voice input...".to_owned());
+        std::thread::spawn(move || {
+            let result = transcribe_recorded_audio(&path);
+            let _ = fs::remove_file(&path);
+            let _ = input_sender.send(HermesChatDropdownMsg::VoiceTranscribed(result));
+        });
+    }
+
+    fn finish_voice_transcription(&mut self, result: std::result::Result<String, String>) {
+        match result {
+            Ok(transcript) if !transcript.trim().is_empty() => {
+                let current = composer_text(&self.ui.composer);
+                let next = if current.trim().is_empty() {
+                    transcript.trim().to_owned()
+                } else {
+                    format!("{} {}", current.trim_end(), transcript.trim())
+                };
+                set_composer_text(&self.ui.composer, &next);
+                self.stash_composer_draft(&next);
+                self.hermes_chat.append_system_notice(
+                    "Voice transcript inserted into the composer.".to_owned(),
+                );
+            }
+            Ok(_) => self
+                .hermes_chat
+                .append_system_notice("Voice input produced an empty transcript.".to_owned()),
+            Err(message) => self
+                .hermes_chat
+                .append_system_notice(format!("Voice transcription failed: {message}")),
+        }
     }
 
     fn accept_slash_suggestion(&mut self) -> bool {
@@ -756,12 +891,13 @@ impl HermesChatDropdown {
             .unwrap_or(&[])
     }
 
-    fn enqueue_prompt(&mut self, text: String) {
+    fn enqueue_prompt(&mut self, text: String, attachments: Vec<ChatAttachment>) {
         self.queue_sequence += 1;
         let scope = self.current_composer_scope();
         let prompt = QueuedPrompt {
             id: format!("queued-{}", self.queue_sequence),
             text,
+            attachments,
         };
         self.queued_prompts.entry(scope).or_default().push(prompt);
     }
@@ -797,7 +933,8 @@ impl HermesChatDropdown {
             self.queued_prompts.remove(&scope);
         }
         self.queue_drain_in_flight = true;
-        self.hermes_chat.send_message(prompt.text);
+        self.hermes_chat
+            .send_message_with_attachments(prompt.text, prompt.attachments);
     }
 
     fn drain_next_queued_if_idle(&mut self) {
@@ -819,7 +956,8 @@ impl HermesChatDropdown {
             self.queued_prompts.remove(&scope);
         }
         self.queue_drain_in_flight = true;
-        self.hermes_chat.send_message(prompt.text);
+        self.hermes_chat
+            .send_message_with_attachments(prompt.text, prompt.attachments);
     }
 
     fn has_running_background_process(&self) -> bool {
@@ -1063,6 +1201,18 @@ impl HermesChatDropdown {
         } else {
             ui.mic_button.set_css_classes(&["hc-icon-btn", "hc-mic"]);
             ui.mic_button.set_tooltip_text(Some("Start voice input"));
+        }
+    }
+
+    fn render_attachments(&self, ui: &HermesChatUi) {
+        while let Some(child) = ui.attachment_box.first_child() {
+            ui.attachment_box.remove(&child);
+        }
+        ui.attachment_box
+            .set_visible(!self.pending_attachments.is_empty());
+        for (index, attachment) in self.pending_attachments.iter().enumerate() {
+            ui.attachment_box
+                .append(&attachment_chip(index, attachment, &self.input_sender));
         }
     }
 
@@ -2964,6 +3114,294 @@ fn slash_suggestion_button(
     button
 }
 
+fn attachment_chip(
+    index: usize,
+    attachment: &ChatAttachment,
+    sender: &relm4::Sender<HermesChatDropdownMsg>,
+) -> gtk::Box {
+    let chip = gtk::Box::new(gtk::Orientation::Horizontal, 4);
+    chip.add_css_class("hc-attachment-chip");
+
+    let icon_name = if attachment.image_url.is_some() {
+        "ld-image-symbolic"
+    } else {
+        "ld-file-text-symbolic"
+    };
+    chip.append(&gtk::Image::from_icon_name(icon_name));
+
+    let label = gtk::Label::new(Some(&attachment.name));
+    label.set_ellipsize(gtk::pango::EllipsizeMode::End);
+    label.set_max_width_chars(28);
+    chip.append(&label);
+
+    let remove = gtk::Button::new();
+    remove.add_css_class("hc-attachment-remove");
+    remove.set_cursor_from_name(Some("pointer"));
+    remove.set_child(Some(&gtk::Image::from_icon_name("ld-x-symbolic")));
+    let sender = sender.clone();
+    remove.connect_clicked(move |_| sender.emit(HermesChatDropdownMsg::RemoveAttachment(index)));
+    chip.append(&remove);
+
+    chip
+}
+
+const MAX_TEXT_ATTACHMENT_BYTES: u64 = 256 * 1024;
+
+fn attachment_from_path(path: &Path) -> std::result::Result<ChatAttachment, String> {
+    let metadata = fs::metadata(path).map_err(|err| format!("Could not read attachment: {err}"))?;
+    if !metadata.is_file() {
+        return Err(String::from("Only regular files can be attached."));
+    }
+
+    let name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("attachment")
+        .to_owned();
+    let mime_type = mime_type_for_path(path);
+    if is_image_mime(&mime_type) {
+        let bytes = fs::read(path).map_err(|err| format!("Could not read image: {err}"))?;
+        let encoded = BASE64_STANDARD.encode(bytes);
+        return Ok(ChatAttachment::image(
+            name,
+            mime_type.clone(),
+            format!("data:{mime_type};base64,{encoded}"),
+        ));
+    }
+
+    if metadata.len() > MAX_TEXT_ATTACHMENT_BYTES {
+        return Err(format!(
+            "{name} is too large for a text attachment (max 256 KiB)."
+        ));
+    }
+    if !is_text_attachment(path, &mime_type) {
+        return Err(format!(
+            "{name} is not an image or supported text document."
+        ));
+    }
+    let text = fs::read_to_string(path)
+        .map_err(|err| format!("Could not read text attachment as UTF-8: {err}"))?;
+    Ok(ChatAttachment::text(name, mime_type, text))
+}
+
+fn mime_type_for_path(path: &Path) -> String {
+    match path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "svg" => "image/svg+xml",
+        "txt" | "log" => "text/plain",
+        "md" | "markdown" => "text/markdown",
+        "json" => "application/json",
+        "yaml" | "yml" => "application/yaml",
+        "toml" => "application/toml",
+        "csv" => "text/csv",
+        "xml" => "application/xml",
+        "rs" => "text/x-rust",
+        "py" => "text/x-python",
+        "js" | "mjs" | "cjs" => "text/javascript",
+        "ts" | "tsx" => "text/typescript",
+        "html" | "htm" => "text/html",
+        "css" => "text/css",
+        _ => "application/octet-stream",
+    }
+    .to_owned()
+}
+
+fn is_image_mime(mime_type: &str) -> bool {
+    matches!(
+        mime_type,
+        "image/png" | "image/jpeg" | "image/gif" | "image/webp" | "image/svg+xml"
+    )
+}
+
+fn is_text_attachment(path: &Path, mime_type: &str) -> bool {
+    mime_type.starts_with("text/")
+        || matches!(
+            mime_type,
+            "application/json" | "application/yaml" | "application/toml" | "application/xml"
+        )
+        || path
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .is_some_and(|extension| {
+                matches!(
+                    extension.to_ascii_lowercase().as_str(),
+                    "rs" | "py"
+                        | "js"
+                        | "ts"
+                        | "tsx"
+                        | "c"
+                        | "h"
+                        | "cpp"
+                        | "hpp"
+                        | "go"
+                        | "java"
+                        | "kt"
+                        | "swift"
+                        | "sh"
+                        | "bash"
+                        | "zsh"
+                        | "fish"
+                )
+            })
+}
+
+fn voice_recording_path() -> PathBuf {
+    env::temp_dir().join(format!(
+        "lumen-hermes-voice-{}.wav",
+        chrono::Utc::now().timestamp_millis()
+    ))
+}
+
+fn start_audio_recorder(path: &Path) -> io::Result<Child> {
+    if command_exists("pw-record") {
+        return Command::new("pw-record")
+            .args(["--format=s16", "--rate=16000", "--channels=1"])
+            .arg(path)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn();
+    }
+    if command_exists("parecord") {
+        return Command::new("parecord")
+            .args([
+                "--file-format=wav",
+                "--format=s16le",
+                "--rate=16000",
+                "--channels=1",
+            ])
+            .arg(path)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn();
+    }
+    if command_exists("arecord") {
+        return Command::new("arecord")
+            .args(["-f", "S16_LE", "-r", "16000", "-c", "1", "-t", "wav"])
+            .arg(path)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn();
+    }
+    Err(io::Error::new(
+        io::ErrorKind::NotFound,
+        "no supported audio recorder found",
+    ))
+}
+
+fn stop_audio_recorder(child: &mut Child) {
+    let pid = child.id().to_string();
+    let _ = Command::new("kill")
+        .args(["-INT", &pid])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+    let _ = child.wait();
+}
+
+fn transcribe_recorded_audio(path: &Path) -> std::result::Result<String, String> {
+    if let Ok(template) = env::var("LUMEN_HERMES_TRANSCRIBE_COMMAND")
+        && !template.trim().is_empty()
+    {
+        return run_transcribe_command(&template, path);
+    }
+    run_hermes_python_transcriber(path)
+}
+
+fn run_transcribe_command(template: &str, path: &Path) -> std::result::Result<String, String> {
+    let command = template.replace("{input_path}", &shell_quote(&path.to_string_lossy()));
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()
+        .map_err(|err| err.to_string())?;
+    command_stdout_or_error(output)
+}
+
+fn run_hermes_python_transcriber(path: &Path) -> std::result::Result<String, String> {
+    let python = env::var("LUMEN_HERMES_PYTHON")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| {
+            if Path::new("/usr/local/lib/hermes-agent/venv/bin/python").exists() {
+                String::from("/usr/local/lib/hermes-agent/venv/bin/python")
+            } else {
+                String::from("python3")
+            }
+        });
+    let script = r#"
+import json, sys
+try:
+    from tools.transcription_tools import transcribe_audio
+    result = transcribe_audio(sys.argv[1])
+    if not result.get('success'):
+        print(result.get('error') or 'transcription failed', file=sys.stderr)
+        sys.exit(1)
+    print((result.get('transcript') or '').strip())
+except Exception as exc:
+    print(str(exc), file=sys.stderr)
+    sys.exit(1)
+"#;
+    let mut command = Command::new(python);
+    command.arg("-c").arg(script).arg(path);
+    if Path::new("/usr/local/lib/hermes-agent").exists() {
+        command.env("PYTHONPATH", python_path_with_hermes());
+    }
+    let output = command.output().map_err(|err| err.to_string())?;
+    command_stdout_or_error(output)
+}
+
+fn python_path_with_hermes() -> String {
+    let hermes_path = "/usr/local/lib/hermes-agent";
+    match env::var("PYTHONPATH") {
+        Ok(existing) if !existing.trim().is_empty() => format!("{hermes_path}:{existing}"),
+        _ => hermes_path.to_owned(),
+    }
+}
+
+fn command_stdout_or_error(output: std::process::Output) -> std::result::Result<String, String> {
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_owned();
+        if stderr.is_empty() {
+            Err(format!("transcriber exited with {}", output.status))
+        } else {
+            Err(stderr)
+        }
+    }
+}
+
+fn command_exists(command: &str) -> bool {
+    Command::new("sh")
+        .arg("-c")
+        .arg(format!(
+            "command -v {} >/dev/null 2>&1",
+            shell_quote(command)
+        ))
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .is_ok_and(|status| status.success())
+}
+
+fn shell_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "'\\''"))
+}
+
 fn composer_text(composer: &gtk::TextView) -> String {
     let buffer = composer.buffer();
     let start = buffer.start_iter();
@@ -3987,6 +4425,27 @@ fn build_composer_css(full_scale: f32, dropdown_scale: f32) -> String {
         .hermes-chat-dropdown .hc-slash-description {{
             color: var(--fg-muted);
             font-size: calc(var(--text-xs) * {dropdown_scale});
+        }}
+        .hermes-chat-dropdown .hc-attachments {{
+            padding: calc(var(--space-xs) * {dropdown_scale}) calc(var(--space-sm) * {dropdown_scale}) 0;
+        }}
+        .hermes-chat-dropdown .hc-attachment-chip {{
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-default);
+            border-radius: 9999px;
+            color: var(--fg-muted);
+            padding: calc(3px * {dropdown_scale}) calc(var(--space-xs) * {dropdown_scale});
+        }}
+        .hermes-chat-dropdown .hc-attachment-chip image {{
+            -gtk-icon-size: calc(var(--icon-xs) * {dropdown_scale});
+        }}
+        .hermes-chat-dropdown .hc-attachment-remove {{
+            min-width: calc(1.2rem * {dropdown_scale});
+            min-height: calc(1.2rem * {dropdown_scale});
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: var(--fg-muted);
         }}
         .hermes-chat-dropdown .hc-icon-btn {{
             min-width: calc(2.6rem * {full_scale});
