@@ -550,6 +550,7 @@ impl HermesChatService {
     }
 
     /// Sends a message with optional image/text attachments.
+    #[allow(clippy::too_many_lines)]
     pub fn send_message_with_attachments(&self, content: String, attachments: Vec<ChatAttachment>) {
         let content = content.trim().to_owned();
         if content.is_empty() {

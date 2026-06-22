@@ -602,6 +602,23 @@ pub(crate) fn parse_messages(value: &Value) -> Vec<HermesMessage> {
     }
 
     messages
+        .into_iter()
+        .filter(should_show_loaded_history_message)
+        .collect()
+}
+
+fn should_show_loaded_history_message(message: &HermesMessage) -> bool {
+    match message.role {
+        HermesRole::User => !is_context_compaction_message(&message.content),
+        HermesRole::Assistant => !message.content.trim().is_empty(),
+        HermesRole::System | HermesRole::Tool | HermesRole::Error => {
+            !message.content.trim().is_empty()
+        }
+    }
+}
+
+fn is_context_compaction_message(content: &str) -> bool {
+    content.trim_start().starts_with("[CONTEXT COMPACTION")
 }
 
 fn parse_message(index: usize, value: &Value) -> Option<HermesMessage> {
@@ -1081,7 +1098,7 @@ mod tests {
                 {
                     "id": "a1",
                     "role": "assistant",
-                    "content": "",
+                    "content": "Reading the file...",
                     "tool_calls": [
                         {
                             "id": "call_1",
@@ -1107,7 +1124,7 @@ mod tests {
         assert_eq!(messages.len(), 3);
         assert_eq!(messages[0].role, HermesRole::User);
         assert_eq!(messages[1].role, HermesRole::Assistant);
-        assert!(messages[1].content.is_empty());
+        assert_eq!(messages[1].content, "Reading the file...");
         assert_eq!(messages[1].tool_events.len(), 1);
         assert_eq!(messages[1].tool_events[0].id, "call_1");
         assert_eq!(messages[1].tool_events[0].tool, "read_file");
@@ -1121,6 +1138,61 @@ mod tests {
             Some("1|hello\n")
         );
         assert_eq!(messages[2].content, "Done.");
+    }
+
+    #[test]
+    fn parse_messages_hides_loaded_history_internal_steps() {
+        let messages = parse_messages(&json!({
+            "messages": [
+                {"id": "u1", "role": "user", "content": "Build this feature"},
+                {
+                    "id": "a1",
+                    "role": "assistant",
+                    "content": "",
+                    "finish_reason": "tool_calls",
+                    "reasoning": "I need to inspect the files first.",
+                    "tool_calls": [
+                        {
+                            "id": "call_1",
+                            "type": "function",
+                            "function": {
+                                "name": "read_file",
+                                "arguments": "{\"path\":\"/tmp/example.txt\"}"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "t1",
+                    "role": "tool",
+                    "tool_call_id": "call_1",
+                    "tool_name": "read_file",
+                    "content": "{\"content\":\"1|hello\\n\",\"total_lines\":1}"
+                },
+                {
+                    "id": "u-compaction",
+                    "role": "user",
+                    "content": "[CONTEXT COMPACTION — REFERENCE ONLY] Earlier turns were compacted into the summary below."
+                },
+                {
+                    "id": "a-reasoning",
+                    "role": "assistant",
+                    "content": "",
+                    "reasoning_content": "Thinking through the next tool call."
+                },
+                {"id": "a2", "role": "assistant", "content": "Implemented."},
+                {"id": "u2", "role": "user", "content": "commit"},
+                {"id": "a3", "role": "assistant", "content": "Committed."}
+            ]
+        }));
+
+        assert_eq!(messages.len(), 4);
+        assert_eq!(messages[0].content, "Build this feature");
+        assert_eq!(messages[1].content, "Implemented.");
+        assert!(messages[1].reasoning.is_empty());
+        assert!(messages[1].tool_events.is_empty());
+        assert_eq!(messages[2].content, "commit");
+        assert_eq!(messages[3].content, "Committed.");
     }
 
     #[test]
